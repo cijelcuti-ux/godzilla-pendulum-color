@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GODZILLA PENDULUM COLOR OS</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d1117">
+<style>
+  :root {
+    --bg: #050505; --card: #111; --card-border: #333;
+    --accent: #00ffcc; --accent-hover: #00e6b8;
+    --text: #d0d0d0; --text-white: #fff;
+    --dim: #777; --danger: #ff4d4d; --blue: #4d94ff; --gold: #ffcc00;
+    --timer-color: #00ffcc;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; padding: 10px; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; display: flex; justify-content: center; }
+  .app-container { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 8px; }
+  
+  .header-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; text-align: center; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
+  
+  .tab-nav { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; }
+  .tab-nav::-webkit-scrollbar { display: none; }
+  .tab-btn { flex: 1; min-width: 50px; padding: 8px 4px; font-size: 10px; font-weight: bold; background: #000; border: 1px solid var(--card-border); color: var(--dim); border-radius: 6px; cursor: pointer; white-space: nowrap; text-align: center; }
+  .tab-btn.active { background: #111; color: var(--text-white); border-color: var(--accent); }
+  
+  .sub-tab-nav { display: flex; gap: 4px; margin-bottom: 8px; overflow-x: auto; padding-bottom: 2px; }
+  .sub-tab-nav::-webkit-scrollbar { display: none; }
+  .sub-tab-btn { flex: 1; min-width: 65px; padding: 6px; font-size: 10px; font-weight: bold; background: #000; border: 1px dashed #333; color: var(--dim); border-radius: 4px; cursor: pointer; white-space: nowrap; }
+  .sub-tab-btn.active { background: rgba(0, 255, 204, 0.1); color: var(--accent); border: 1px solid var(--accent); }
+  
+  .dual-slot-container { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .slot-box { background: #000; border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; transition: 0.2s; display: flex; flex-direction: column; align-items: center; cursor: pointer; position: relative; }
+  .slot-box.active { border-color: var(--accent); box-shadow: 0 0 8px rgba(0,0,0,0.5); background: #0a1111; }
+  .slot-name { font-size: 12px; font-weight: bold; color: var(--text-white); text-align: center; margin-bottom: 2px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot-attr { font-size: 9px; text-align: center; margin-bottom: 6px; width: 100%; }
+  
+  .call-badge { position: absolute; top: 6px; right: 6px; background: var(--danger); color: #fff; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 8px; display: none; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0.5; } }
+
+  .sprite-container { width: 72px; height: 72px; background: url('https://humulos.com/digimon/images/dot/pengz/ui/bg01_day.png') center/cover; border: 2px solid #222; border-radius: 6px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; overflow: hidden; box-shadow: inset 0 0 5px rgba(0,0,0,0.8); cursor: pointer; position: relative; }
+  .sprite-container img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+  .sprite-hint { position: absolute; bottom: 2px; right: 2px; font-size: 8px; background: rgba(0,0,0,0.6); padding: 1px 3px; border-radius: 2px; color: #fff; }
+  
+  .stat-row { width: 100%; display: flex; justify-content: space-between; font-size: 10px; color: var(--dim); margin-bottom: 4px; border-bottom: 1px dashed #222; padding-bottom: 2px; }
+  .stat-val { font-weight: bold; color: var(--text-white); font-family: monospace; font-size: 11px; transition: color 0.3s; }
+  
+  .jogress-btn { grid-column: span 2; background: linear-gradient(90deg, #4d94ff, #ff4d4d); color: #fff; border: none; padding: 10px; font-weight: 900; font-size: 12px; border-radius: 6px; cursor: pointer; text-shadow: 1px 1px 2px #000; margin-top: 4px; transition: 0.2s; }
+  .jogress-btn:active { transform: scale(0.98); }
+  
+  .timer-box { background: #000; border: 1px solid #222; border-radius: 8px; padding: 12px; margin-top: 6px; text-align: center; }
+  .timer-val { font-size: 32px; font-weight: 900; font-family: monospace; color: var(--timer-color); letter-spacing: 2px; text-shadow: 1px 1px 2px #000; }
+
+  .control-panel { background: var(--card); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; margin-top: 8px; }
+  .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ctrl-box { background: #000; padding: 8px; border-radius: 6px; border: 1px solid #222; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+  .ctrl-title { font-size: 10px; font-weight: bold; margin-bottom: 6px; color: var(--dim); }
+  .btn-group { display: flex; justify-content: center; gap: 4px; }
+  
+  button.btn { background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 4px 10px; font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; transition: 0.2s; }
+  button.btn.sm-btn { padding: 4px 6px; font-size: 10px; }
+  button.btn.primary { background: #00332b; border-color: var(--accent); color: var(--accent); }
+  button.btn.danger { background: rgba(248,81,73,0.15); border-color: var(--danger); color: var(--danger); }
+  button.btn.warn { background: rgba(255,204,0,0.15); border-color: var(--gold); color: var(--gold); }
+  button.btn.cold-active { background: rgba(77, 148, 255, 0.2); border-color: var(--blue); color: var(--blue); }
+  button.btn.bonus-active { background: rgba(255, 204, 0, 0.2); border-color: var(--gold); color: var(--gold); }
+  
+  select.db-select { width: 100%; background: #000; color: #fff; border: 1px solid #333; padding: 6px; border-radius: 4px; font-size: 11px; margin-bottom: 8px; outline: none; }
+  textarea.memo-area { width: 100%; height: 50px; background: #000; border: 1px solid #333; color: var(--text-white); padding: 8px; border-radius: 4px; font-family: sans-serif; font-size: 11px; resize: none; outline: none; margin-bottom: 8px; }
+  textarea.memo-area:focus { border-color: var(--accent); }
+
+  .prediction-box { background: rgba(0, 0, 0, 0.3); border: 1px solid #333; border-radius: 6px; padding: 10px; margin-top: 8px; font-size: 11px; line-height: 1.5; }
+  .prediction-title { color: var(--accent); font-weight: bold; margin-bottom: 4px; text-align: center; }
+  .condition-list { margin-top: 8px; border-top: 1px dashed #333; padding-top: 8px; }
+  .condition-item { display: flex; flex-direction: column; margin-bottom: 6px; background: #000; padding: 6px; border-radius: 4px; border: 1px solid #222; }
+  .condition-target { color: var(--gold); font-weight: bold; font-size: 10.5px; margin-bottom: 2px; }
+  .condition-req { color: var(--text-white); font-size: 9.5px; }
+  
+  .tag-va { color: var(--accent); } .tag-da { color: var(--blue); } .tag-vi { color: var(--danger); } .tag-fr { color: var(--dim); }
+  
+  .quest-item { background: #000; border: 1px solid #222; border-radius: 6px; padding: 8px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; }
+  .quest-item.cleared { border-color: var(--accent); background: rgba(0, 0, 0, 0.3); }
+  .quest-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .quest-title { font-weight: bold; font-size: 12px; color: var(--text-white); }
+  .quest-enemies { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+  .enemy-chip { display: flex; align-items: center; gap: 4px; background: #111; border: 1px solid #333; border-radius: 4px; padding: 2px 6px; font-size: 9px; }
+  .enemy-chip img { width: 16px; height: 16px; image-rendering: pixelated; }
+  .quest-unlock { font-size: 9px; color: var(--gold); font-weight: bold; margin-top: 2px; }
+
+  .manual-card { background: #000; border: 1px solid #222; border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 10.5px; line-height: 1.5; color: var(--text-white); overflow-x: auto; }
+  .manual-card h3 { color: var(--accent); margin: 0 0 6px 0; font-size: 12px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+  .manual-card h4 { color: var(--gold); margin: 8px 0 4px 0; font-size: 11px; }
+  .manual-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 9.5px; min-width: max-content; }
+  .manual-table th, .manual-table td { border: 1px solid #333; padding: 4px; text-align: center; }
+  .manual-table th { background: #111; color: var(--dim); }
+
+  textarea.backup-area { width: 100%; height: 80px; background: #000; border: 1px solid #333; color: var(--accent); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 10px; resize: none; outline: none; margin-bottom: 8px; }
+  
+  .color-picker-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 11px; color: var(--dim); }
+  .color-picker-input { border: 1px solid #333; background: #000; border-radius: 4px; cursor: pointer; width: 60px; height: 26px; padding: 0; outline: none; }
+  .tab-nav {display:flex;flex-wrap:wrap;gap:4px;}
+  .tab-nav .tab-btn {flex:1 1 29%;min-width:65px;}
+  .evo-species-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:7px;max-height:380px;overflow-y:auto;}
+  .evo-species {background:#090909;border:1px solid #333;border-radius:7px;padding:7px;color:#fff;cursor:pointer;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+  .evo-species img,.evo-route-icon {width:38px;height:38px;object-fit:contain;image-rendering:pixelated;}
+  .evo-species.selected {border-color:var(--accent);background:#071614;}
+  .evo-species .evo-name {font-size:10px;line-height:1.3;text-align:center;word-break:keep-all;}
+  .evo-species .evo-stage {color:var(--dim);font-size:9px;}
+  .evo-section {border:1px solid #2d2d2d;border-radius:7px;padding:9px;margin-top:10px;background:#080808;}
+  .evo-section h3 {color:var(--accent);font-size:12px;margin:0 0 8px;}
+  .evo-row {padding:8px 2px;border-top:1px solid #262626;font-size:11px;line-height:1.6;}
+  .evo-row:first-of-type {border-top:0;}
+  .evo-row-title {display:flex;align-items:center;gap:8px;font-weight:bold;color:#eee;}
+  .evo-row-note {font-size:10px;color:#bababa;margin-left:46px;white-space:normal;}
+  .evo-extra-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px;}
+  .evo-extra-grid label {color:var(--dim);font-size:9px;line-height:1.4;}
+  .evo-extra-grid input {box-sizing:border-box;width:100%;margin-top:4px;background:#050505;color:#fff;border:1px solid #444;border-radius:4px;padding:7px 3px;font-size:12px;}
+
+  .jogress-compact{font-size:12px;line-height:1.55;color:#eee}
+  .jogress-slot-box{background:#101b19;border:1px solid #24584c;padding:11px;border-radius:8px;margin-bottom:12px}
+  .jogress-slot-box strong{color:var(--accent);display:block;margin-bottom:6px}
+  .jogress-outcome{color:#8fe8b1;font-weight:700;margin-top:5px}
+  .jogress-muted{color:#999;font-size:11px;font-weight:400}
+  .jogress-filter-title{display:flex;justify-content:space-between;color:var(--accent);font-weight:700;margin:10px 0 7px}
+  .jogress-filter-title span{color:#aaa;font-size:11px}
+  #jogressSearch,.jogress-filter-grid select{box-sizing:border-box;width:100%;min-width:0;background:#080808;color:#eee;border:1px solid #444;border-radius:6px;padding:9px;font-size:12px}
+  .jogress-filter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:7px 0}
+  .jogress-filter-grid select:last-child{grid-column:1/-1}
+  .jogress-check{display:flex;align-items:center;gap:6px;margin:8px 0}
+  .jogress-check input{accent-color:#00ddbb}
+  .jogress-count{color:#bbb;margin:12px 0 6px}
+  .jogress-item{border:1px solid #303b3a;border-radius:6px;background:#0c1212;margin:5px 0}
+  .jogress-item summary{cursor:pointer;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;padding:9px;list-style:none}
+  .jogress-item summary::-webkit-details-marker{display:none}
+  .jogress-item summary b{color:var(--accent);font-size:11px}
+  .jogress-item-detail{border-top:1px solid #333;padding:9px;color:#ccc}
+  .jogress-pager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0}
+  .jogress-pager button{background:#111;color:#eee;border:1px solid #555;border-radius:5px;padding:8px 16px}
+  .jogress-pager button:disabled{opacity:.35}
+  .jogress-empty{padding:20px 8px;text-align:center;color:#aaa}
+  .jogress-optional{border-top:1px solid #333;padding-top:12px;margin-top:10px}
+  .jogress-optional summary{cursor:pointer;color:#aaa}
+
+  .evo-detail-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:11px}
+  .evo-detail-stat{border:1px solid #333;background:#111;border-radius:5px;padding:7px;display:flex;flex-direction:column;gap:2px;min-width:0;overflow-wrap:anywhere}
+  .evo-detail-stat span{color:#a6a6a6;font-size:10px}
+  .evo-detail-stat strong{font-size:12px;color:var(--text-white)}
+  .evo-detail-note{font-size:9px;color:var(--dim);margin-top:7px}
+  .evo-reverse-jog{border:1px solid #333;border-radius:6px;padding:9px;margin-top:7px}
+  .evo-reverse-jog>summary{cursor:pointer;color:var(--accent);font-weight:bold;font-size:11px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header-card">GODZILLA PENDULUM COLOR <span style="font-size:10px;opacity:.65;">v2.0.2</span></div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" id="tab-main" onclick="setTab('main')">메인</button>
+    <button class="tab-btn" id="tab-chart" onclick="setTab('chart')">진화표</button>
+    <button class="tab-btn" id="tab-quest" onclick="setTab('quest')">퀘스트</button>
+    <button class="tab-btn" id="tab-manual" onclick="setTab('manual')">설명서</button>
+    <button class="tab-btn" id="tab-db" onclick="setTab('db')">조그레스</button>
+    <button class="tab-btn" id="tab-settings" onclick="setTab('settings')">백업</button>
+  </div>
+
+  <div id="view-main">
+    <div class="dual-slot-container">
+      <div class="slot-box active" id="slot1" onclick="selectSlot(1)">
+        <div class="call-badge" id="callBadge1">호출!</div>
+        <select class="db-select" id="selDigi1" onchange="updateDigi(1)"></select>
+        <div class="sprite-container" onclick="toggleImageMode(1)">
+          <img id="img1" src="" alt="Digimon Sprite">
+          <div class="sprite-hint">터치 전환</div>
+        </div>
+        <div class="slot-name" id="name1">로딩중</div>
+        <div class="slot-attr" id="attr1">속성</div>
+        <div class="stat-row"><span>전투력(Power)</span><span class="stat-val" id="power1" style="color:var(--gold);">0</span></div>
+        <div class="stat-row"><span>케어 미스</span><span class="stat-val" id="miss1">0</span></div>
+        <div class="stat-row"><span>G-Cell 상태</span><span class="stat-val" id="gcell1">0 / 14 (Blue)</span></div>
+        <div class="stat-row"><span>배틀 전적</span><span class="stat-val" id="battle1">0승 0전</span></div>
+      </div>
+      
+      <div class="slot-box" id="slot2" onclick="selectSlot(2)">
+        <div class="call-badge" id="callBadge2">호출!</div>
+        <select class="db-select" id="selDigi2" onchange="updateDigi(2)"></select>
+        <div class="sprite-container" onclick="toggleImageMode(2)">
+          <img id="img2" src="" alt="Digimon Sprite">
+          <div class="sprite-hint">터치 전환</div>
+        </div>
+        <div class="slot-name" id="name2">로딩중</div>
+        <div class="slot-attr" id="attr2">속성</div>
+        <div class="stat-row"><span>전투력(Power)</span><span class="stat-val" id="power2" style="color:var(--gold);">0</span></div>
+        <div class="stat-row"><span>케어 미스</span><span class="stat-val" id="miss2">0</span></div>
+        <div class="stat-row"><span>G-Cell 상태</span><span class="stat-val" id="gcell2">0 / 14 (Blue)</span></div>
+        <div class="stat-row"><span>배틀 전적</span><span class="stat-val" id="battle2">0승 0전</span></div>
+      </div>
+      
+      <button class="jogress-btn" onclick="executeJogress()">조그레스 (합체 진화) 실행</button>
+    </div>
+
+    <!-- 타이머 박스 -->
+    <div class="timer-box">
+      <div class="timer-val" id="timeRemaining">00:00:00</div>
+      <div id="timerStatus" style="font-size:10px; color:var(--dim); margin-top:4px;">진화 대기 중</div>
+    </div>
+
+    <!-- 컨트롤 패널 -->
+    <div class="control-panel">
+      <div style="font-size:11px; font-weight:bold; color:var(--text-white); margin-bottom:8px; text-align:center;">
+        [ <span id="activeSlotName" style="color:var(--accent);">슬롯 1</span> ] 조작 패널
+      </div>
+      
+      <!-- 개별 메모장 -->
+      <textarea id="slotMemoInput" class="memo-area" placeholder="여기에 개별 육성 메모를 남기세요 (자동 저장)&#10;예: 밤 11시 30분 진화 예정 / 호출 미스 1회" oninput="updateSlotMemo(this.value)"></textarea>
+
+      <!-- 호출 (Call) 관리 -->
+      <div class="ctrl-box" style="margin-bottom:8px; border-color:var(--danger); background:rgba(255,77,77,0.05);">
+        <div class="ctrl-title" style="color:var(--danger);">호출 발생 및 타이머</div>
+        <div id="callStatusText" style="font-size:11px; font-weight:bold; color:var(--text-white); margin-bottom:6px;">현재 호출 없음</div>
+        <div class="btn-group">
+          <button class="btn warn" onclick="triggerCall('normal')">배고픔/근력 (10분)</button>
+          <button class="btn warn" onclick="triggerCall('sleep')">수면 (60분)</button>
+          <button class="btn primary" onclick="answerCall()">돌보기 (응답)</button>
+        </div>
+      </div>
+
+      <!-- 훈련 (Training) 패널 -->
+      <div class="ctrl-box" style="margin-bottom:8px; border-color:var(--gold);">
+        <div class="ctrl-title" style="color:var(--gold); display:flex; justify-content:space-between; align-items:center;">
+          <span>펜들럼 훈련 (현재 <span id="trainCountUI">1</span>회차)</span>
+          <button class="btn sm-btn" style="flex:none; background:#222; border-color:#444;" onclick="resetTraining()">초기화</button>
+        </div>
+        <div style="font-size:9px; color:var(--dim); margin-bottom:6px; text-align:left;">5회차마다 안기라스 훈련 등장 (포인트 보너스)</div>
+        <div class="btn-group">
+          <button class="btn primary" onclick="executeTraining(5)">메가히트</button>
+          <button class="btn" style="color:var(--accent); border-color:var(--accent);" onclick="executeTraining(3)">3~4 히트</button>
+          <button class="btn" onclick="executeTraining(1)">1~2 히트</button>
+          <button class="btn danger" onclick="executeTraining(0)">실패(0)</button>
+        </div>
+      </div>
+
+      <div class="ctrl-box" style="margin-bottom:8px;">
+        <div class="ctrl-title">진화 타이머 설정 (자동 동기화)</div>
+        <select class="db-select" id="timerSelect" style="margin-bottom: 6px;">
+          <option value="600">유년기 I ➔ II (10분)</option>
+          <option value="43200">유년기 II ➔ 성장기 (12시간)</option>
+          <option value="86400">성장기 ➔ 성숙기 (24시간)</option>
+          <option value="115200">성숙기 ➔ 완전체 (32시간)</option>
+          <option value="144000">완전체 ➔ 궁극체 (40시간)</option>
+          <option value="172800">궁극체 ➔ 초궁극체 (48시간)</option>
+        </select>
+        <div class="btn-group" style="margin-bottom:6px;">
+          <button class="btn primary" onclick="startTimer()">타이머 시작</button>
+          <button class="btn" id="btnCold" onclick="toggleCold()" style="color:var(--blue); border-color:var(--blue);">콜드 모드 (정지)</button>
+        </div>
+        
+        <!-- 타이머 수동 보정 버튼 -->
+        <div style="border-top: 1px dashed #333; padding-top:6px; margin-top:2px;">
+          <div style="font-size:9px; color:var(--dim); margin-bottom:4px;">시간 수동 보정 (±)</div>
+          <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:4px;">
+            <button class="btn sm-btn" onclick="adjustTime(-60)">-1h</button>
+            <button class="btn sm-btn" onclick="adjustTime(-10)">-10m</button>
+            <button class="btn sm-btn" onclick="adjustTime(-1)">-1m</button>
+            <button class="btn sm-btn" onclick="adjustTime(1)">+1m</button>
+            <button class="btn sm-btn" onclick="adjustTime(10)">+10m</button>
+            <button class="btn sm-btn" onclick="adjustTime(60)">+1h</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-grid">
+        <div class="ctrl-box">
+          <div class="ctrl-title">전투력 보너스 상태</div>
+          <div class="btn-group">
+            <button class="btn" id="btnStr" onclick="toggleBonus('isFullStrength')">근력 MAX</button>
+            <button class="btn" id="btnTrait" onclick="toggleBonus('isTraited')">트레이티드</button>
+          </div>
+        </div>
+        <div class="ctrl-box">
+          <div class="ctrl-title">케어 미스 강제 조작</div>
+          <div class="btn-group">
+            <button class="btn" onclick="adj('miss', -1)">- 1</button>
+            <button class="btn danger" onclick="adj('miss', 1)">+ 1</button>
+          </div>
+        </div>
+        <div class="ctrl-box">
+          <div class="ctrl-title" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>수동 G-Cell 조작</span>
+            <button class="btn sm-btn" style="flex:none; background:#222; border-color:#444;" onclick="resetGPoints()">초기화</button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
+            <div class="btn-group">
+              <button class="btn" onclick="adjCell(-1)">칸 -1</button>
+              <button class="btn" style="color:var(--accent); border-color:var(--accent);" onclick="adjCell(1)">칸 +1</button>
+            </div>
+            <div class="btn-group">
+              <button class="btn" onclick="adj('gPoints', -1)">Pt -1</button>
+              <button class="btn" style="color:var(--gold); border-color:var(--gold);" onclick="adj('gPoints', 1)">Pt +1</button>
+            </div>
+          </div>
+        </div>
+        <div class="ctrl-box">
+          <div class="ctrl-title">배틀 전적 입력</div>
+          <div class="btn-group">
+            <button class="btn primary" onclick="recordBattle(true)">승리</button>
+            <button class="btn danger" onclick="recordBattle(false)">패배</button>
+          </div>
+          <div class="btn-group" style="margin-top:4px;">
+            <button class="btn" onclick="resetBattle()">전적 초기화</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="prediction-box">
+        <div class="prediction-title">실시간 진화 예측 분석기</div>
+        <div id="predictionResult" style="color:var(--text-white); text-align:center; font-size:13px; font-weight:bold;">조건 분석 대기 중...</div>
+        <details class="evo-extra" style="margin-top:10px;">
+          <summary style="color:var(--dim);cursor:pointer;font-size:11px;">특수 진화 기록 입력 (선택)</summary>
+          <div class="evo-extra-grid">
+            <label>생애 누적 배틀<input type="number" min="0" step="1" id="evoLifetime" onchange="setSpecialStat('lifetimeBattles',this.value)"></label>
+            <label>화면 배설물 개수<input type="number" min="0" max="8" step="1" id="evoPoop" onchange="setSpecialStat('poopCount',this.value)"></label>
+            <label>조건 대상 G몬 처치 수<input type="number" min="0" step="1" id="evoGKills" onchange="setSpecialStat('gKills',this.value)"></label>
+          </div>
+          <div style="font-size:9px;color:var(--dim);margin-top:5px;">생애 누적 배틀은 새로 기록되는 전투를 자동 합산합니다. 이전 육성 기록은 직접 입력할 수 있습니다. 특수 조건을 기록하지 않으면 판정이 '확인 필요'로 나옵니다.</div>
+        </details>
+        <div class="condition-list" id="conditionList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-chart" style="display:none; background:#111; padding:12px; border-radius:8px; border:1px solid #333;">
+    <div style="font-size:13px;font-weight:bold;color:var(--accent);text-align:center;margin-bottom:8px;">고질라 에디션 · 원본 진화표</div>
+    <div style="font-size:10px;line-height:1.6;color:var(--dim);margin-bottom:10px;">출처: Humulos PenGZ 원본 진화 가이드 / 조그레스 표. 진화표에 있는 58종을 모두 검색할 수 있습니다. 몬스터를 선택하면 진화 전·후 경로와 조건을 함께 볼 수 있습니다.</div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+      <input id="chartSearch" type="search" placeholder="몬스터 이름 검색" oninput="renderEvolutionChart()" style="flex:1;min-width:100px;max-width:100%;background:#070707;border:1px solid #444;border-radius:4px;color:#eee;padding:9px;font-size:12px;" />
+      <select id="chartStage" onchange="renderEvolutionChart()" style="background:#070707;color:#fff;border:1px solid #444;padding:8px;border-radius:4px;font-size:11px;">
+        <option value="">모든 단계</option><option value="I">I</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option><option value="VI">VI</option><option value="VI+">VI+</option><option value="M">M</option>
+      </select>
+    </div>
+    <div id="chartCount" style="color:var(--dim);font-size:10px;margin-bottom:8px;"></div>
+    <div id="chartList" class="evo-species-grid"></div>
+    <div id="chartDetails" style="margin-top:12px;"></div>
+  </div>
+
+  <div id="view-quest" style="display:none; background:#111; padding:12px; border-radius:8px; border:1px solid #333;">
+    <div style="font-size:11px; color:var(--dim); text-align:center; margin-bottom:10px;">
+      퀘스트 모드에서 각 라운드를 돌파하여 보상을 해금하세요.<br>전투 승리 시 자동으로 메인 배틀 전적에 +1승이 합산됩니다.
+    </div>
+    <div id="questListContainer"></div>
+  </div>
+
+  <div id="view-manual" style="display:none; background:#111; padding:12px; border-radius:8px; border:1px solid #333;">
+    <div class="sub-tab-nav">
+      <button class="sub-tab-btn active" id="mtab-basic" onclick="setManualTab('basic')">기초 / 조작</button>
+      <button class="sub-tab-btn" id="mtab-raise" onclick="setManualTab('raise')">육성 / G-Cell</button>
+      <button class="sub-tab-btn" id="mtab-battle" onclick="setManualTab('battle')">전투 / 인카운터</button>
+      <button class="sub-tab-btn" id="mtab-bg" onclick="setManualTab('bg')">배경 해금</button>
+    </div>
+
+    <div id="manual-basic">
+      <div class="manual-card">
+        <h3>🎮 버튼 조작 및 기본</h3>
+        • <b>A버튼:</b> 선택 (메뉴 이동)<br>
+        • <b>B버튼:</b> 결정 (시계 확인)<br>
+        • <b>C버튼:</b> 취소 (바탕화면에서 2초 누르면 설정 진입)<br>
+        • <b>A+C버튼:</b> 소리 끄기/켜기 (시계 화면에서는 시간 변경)<br>
+        • <b>죽었을 때:</b> 컴퓨터 화면에서 A+B버튼을 누르면 새 알 선택
+      </div>
+      <div class="manual-card">
+        <h3>⚠️ 호출 미스 (Care Mistakes)</h3>
+        <p style="color:var(--dim);">호출 미스는 배고픔(Hunger)이나 근력(Strength) 하트가 0이 되거나, 자고 있을 때 불을 꺼달라고 부르는 경우 발생합니다.</p>
+        • 호출 후 10분(수면은 1시간) 내에 돌보지 않아 호출등이 스스로 꺼지면 미스 1회 적립.<br>
+        • 똥(Poop), 부상, 병, 오버피딩(과식), 자는 아이 깨우기는 미스에 포함되지 않습니다.<br>
+        • 진화 시 호출 미스 수치는 0으로 리셋됩니다.
+      </div>
+      <div class="manual-card">
+        <h3>💩 배설물 & 질병 & 부상</h3>
+        • <b>배설물(Poop):</b> 스테이지별로 정해진 시간마다 똥을 쌉니다. 화면에 똥이 8개 누적되면 병에 걸립니다.<br>
+        • <b>부상/병:</b> 한 진화 형태에서 병이나 부상에 12번 걸리거나, 6시간 방치 시 죽게 됩니다.<br>
+        • <b>죽음 방지:</b> 괴수가 죽기 직전 1분 동안 절규할 때, 30초 내에 기기를 50번 이상 흔들면(Shake) 살릴 수도 있습니다.
+      </div>
+      <div class="manual-card">
+        <h3>❄️ 수면 및 콜드 모드 (Cold Mode)</h3>
+        • <b>수면:</b> 잠들면 불을 꺼야 미스가 발생하지 않으며, 방해하면 전투 패배 시 부상 확률이 2% 증가합니다. 모든 괴수는 아침 7시에 자동 기상합니다.<br>
+        • <b>콜드 모드:</b> 괴수를 냉동시켜 나이, 진화 타이머, 하트 감소, 배설물 생성 등을 전부 멈춥니다.
+      </div>
+    </div>
+
+    <div id="manual-raise" style="display:none;">
+      <div class="manual-card">
+        <h3>⏱️ 진화 시간 (Evolution Timer)</h3>
+        <table class="manual-table">
+          <tr><th>현재 스테이지</th><th>요구 시간</th></tr>
+          <tr><td>알(Egg)</td><td>8 초</td></tr>
+          <tr><td>유년기 I (Stage I)</td><td>10 분</td></tr>
+          <tr><td>유년기 II (Stage II)</td><td>12 시간</td></tr>
+          <tr><td>성장기 (Stage III)</td><td>24 시간</td></tr>
+          <tr><td>성숙기 (Stage IV)</td><td>32 시간</td></tr>
+          <tr><td>완전체 (Stage V)</td><td>40 시간</td></tr>
+          <tr><td>궁극체 (Stage VI)</td><td>48 시간</td></tr>
+        </table>
+        <div style="color:var(--dim); font-size:9px; margin-top:4px;">* 진화 시 케어 미스, G-Cell, 몸무게, 부상/병 횟수가 0으로 초기화됩니다. (승률 및 누적 배틀은 유지)</div>
+      </div>
+
+      <div class="manual-card">
+        <h3>🧬 G-Cell(G-세포) 게이지 구조</h3>
+        <div style="color:var(--dim); font-size:9px; margin-bottom:4px;">진화 루트를 결정하는 핵심입니다. 게이지 0~7칸은 <b>파란색(비활성)</b>, 8~14칸은 <b>붉은색(활성)</b>입니다.</div>
+        <table class="manual-table">
+          <tr><th>세대</th><th>1칸당 필요 Pt</th><th>최대치(14칸) Pt</th></tr>
+          <tr><td>유년기 I~II</td><td>2</td><td>28</td></tr>
+          <tr><td>성장기 (III)</td><td>4</td><td>56</td></tr>
+          <tr><td>성숙기 (IV)</td><td>8</td><td>112</td></tr>
+          <tr><td>완전체 이상</td><td>16</td><td>224</td></tr>
+        </table>
+      </div>
+
+      <div class="manual-card">
+        <h3>📊 G-Cell 포인트 공통 증감 (전 세대 동일)</h3>
+        <table class="manual-table">
+          <tr><th>액션</th><th>G-Cell 포인트</th></tr>
+          <tr><td>안기라스 훈련 메가히트 / 3~4히트</td><td>+8 / +4</td></tr>
+          <tr><td>일반 훈련 메가히트 / 3~4히트</td><td>+2 / +1</td></tr>
+          <tr><td>훈련 1~2히트</td><td>0</td></tr>
+          <tr><td>일반 훈련 실패(0) / 안기라스 실패(0)</td><td>-1 / -2</td></tr>
+          <tr><td>프로틴 1회 급여</td><td>-2</td></tr>
+          <tr><td>타 기종(비 고질라) 배틀 승리 / 패배</td><td>+6 / -4</td></tr>
+        </table>
+      </div>
+
+      <div class="manual-card" style="overflow-x: auto;">
+        <h3>📈 G-Cell 세대별 차등 증감</h3>
+        <div style="color:var(--dim); font-size:9px; margin-bottom:4px; white-space: nowrap;">퀘스트 모드, 랜덤 인카운터, 고질라 에디션 간 배틀에 적용됩니다.</div>
+        <table class="manual-table" style="min-width: 380px;">
+          <tr><th>액션</th><th>I~II</th><th>III</th><th>IV</th><th>V</th><th>VI</th><th>VI+</th></tr>
+          <tr><td>케어미스 / 근력 0</td><td>-1</td><td>-1</td><td>-2</td><td>-4</td><td>-4</td><td>-4</td></tr>
+          <tr><td>고질라간 배틀 승리</td><td>0</td><td>+4</td><td>+6</td><td>+8</td><td>+10</td><td>0</td></tr>
+          <tr><td>고질라간 배틀 패배</td><td>0</td><td>-3</td><td>-4</td><td>-6</td><td>-8</td><td>0</td></tr>
+          <tr><td>랜덤 인카운터 승리</td><td>0</td><td>+6</td><td>+12</td><td>+24</td><td>+32</td><td>0</td></tr>
+          <tr><td>랜덤 인카운터 패배</td><td>0</td><td>-4</td><td>-8</td><td>-16</td><td>-24</td><td>0</td></tr>
+        </table>
+      </div>
+
+      <div class="manual-card">
+        <h3>💪 속성별 훈련 흔들기(Shake) 횟수</h3>
+        <div style="color:var(--dim); font-size:9px; margin-bottom:4px;">메가히트(5히트)를 발생시키기 위해 정확히 흔들어야 하는 횟수입니다.</div>
+        <table class="manual-table">
+          <tr><th>속성</th><th>0~3 셀</th><th>4~7 셀</th><th>8~10 셀</th><th>11~14 셀</th></tr>
+          <tr><td class="tag-va">Free/백신(Va)</td><td>5~6</td><td>7~8</td><td>5~6</td><td>11~12</td></tr>
+          <tr><td class="tag-da">데이터(Da)</td><td>5~6</td><td>11~12</td><td>9~10</td><td>5~6</td></tr>
+          <tr><td class="tag-vi">바이러스(Vi)</td><td>9~10</td><td>5~6</td><td>11~12</td><td>7~8</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div id="manual-battle" style="display:none;">
+      <div class="manual-card">
+        <h3>⚔️ 전투력(Power) 및 보너스</h3>
+        • 전투력이 상대보다 높을수록 공격 명중률 상승.<br>
+        • 근력(Strength) 하트가 가득 차거나, 트레이티드 에그로 부화했거나, 붉은색 G-Cell이 활성화될 때 각각 전투력 추가 보너스 발생.<br>
+        • <b>보너스 합계:</b> 성장기(+15), 성숙기(+24), 완전체(+45), 궁/초궁극체(+55)
+      </div>
+
+      <div class="manual-card">
+        <h3>⚔️ 배틀 승률 및 조건</h3>
+        • <b>승률에 따른 진화:</b> 15전 이상 진행 시 승률이 80% 이상이면 100% 진화, 70~79%는 70% 확률, 40~69%는 40% 확률로 진화합니다.<br>
+        • <b>속성 상성:</b> 백신 > 바이러스 > 데이터 > 백신 (유리한 속성일 경우 명중률 10% 보너스 적용).<br>
+        • <b>G-Erosion 진화:</b> 고질라, G-Erosion, G-Fusion 이름이 들어간 5단계 이상의 적을 10번 무찌르면 즉시 진화합니다 (메탈가루몬: G-침식 모드 전용).
+      </div>
+
+      <div class="manual-card">
+        <h3>⚠️ 랜덤 인카운터 (Random Encounters) 시간표</h3>
+        <table class="manual-table">
+          <tr><th>그룹</th><th>1차</th><th>2차</th><th>3차</th><th>4차</th><th>5차</th><th>6차</th></tr>
+          <tr><td>0</td><td>11:19</td><td>13:12</td><td>16:04</td><td>18:27</td><td>-</td><td>-</td></tr>
+          <tr><td>1</td><td>10:43</td><td>14:27</td><td>16:55</td><td>19:04</td><td>-</td><td>-</td></tr>
+          <tr><td>2</td><td>11:47</td><td>13:19</td><td>15:37</td><td>17:26</td><td>19:51</td><td>-</td></tr>
+          <tr><td>3</td><td>09:47</td><td>12:10</td><td>14:44</td><td>18:03</td><td>20:20</td><td>-</td></tr>
+          <tr><td>4</td><td>11:19</td><td>14:07</td><td>16:29</td><td>18:09</td><td>20:48</td><td>-</td></tr>
+          <tr><td>5</td><td>10:12</td><td>13:12</td><td>15:09</td><td>17:06</td><td>19:04</td><td>21:12</td></tr>
+          <tr><td>6</td><td>09:47</td><td>12:10</td><td>13:52</td><td>16:04</td><td>17:46</td><td>20:20</td></tr>
+          <tr><td>7</td><td>10:43</td><td>12:33</td><td>14:27</td><td>16:55</td><td>18:27</td><td>20:48</td></tr>
+        </table>
+      </div>
+      
+      <div class="manual-card">
+        <h3>⚠️ 랜덤 인카운터 등장 괴수 (Opponents)</h3>
+        <p style="color:var(--dim);">각 그룹별로 등장하는 괴수의 순서입니다 (계속 반복).</p>
+        <table class="manual-table">
+          <tr><th>그룹</th><th>등장 순서</th></tr>
+          <tr><td>0</td><td style="text-align: left;">아구몬, 모스라(유충), None, 미니라, 모노드라몬, None, 도랏토, 모스라(유충), 스트라이크드라몬, None, 모노드라몬, 도랏토, None, 티라노몬, 아구몬, None</td></tr>
+          <tr><td>1</td><td style="text-align: left;">파피몬, None, 모노드라몬, 가루몬, 베이비 고지라, 모스라(유충), None, 모노드라몬, 모스라 레오, 베이비 고지라, None, 파피몬, 모스라(유충), 가이강(밀레니엄), None, 파피몬</td></tr>
+          <tr><td>2</td><td style="text-align: left;">베이비 고지라, 도랏토, None, 리틀 고지라, 파피몬, 아구몬, None, 도랏토, 그레이몬 "G" 침식 모드, 파피몬, 베이비 고지라, None, 도랏토, 킹 기도라(헤이세이), None, 아구몬</td></tr>
+          <tr><td>3</td><td style="text-align: left;">가이강(밀레니엄), None, 모스라 레오, 스트라이크드라몬, 고지라(초대), None, 그레이몬 "G" 침식 모드, 킹 기도라(헤이세이), 아쿠아 모스라, 가루몬, None, 킹 기도라(헤이세이), 메카 킹 기도라, 모스라 레오, 리틀 고지라, None</td></tr>
+          <tr><td>4</td><td style="text-align: left;">플라이몬, 미니라, None, 마스터티라노몬, 리틀 고지라, None, 티라노몬, 메카 킹 기도라, 가이강(밀레니엄), None, 미니라, 가이강(밀레니엄), 가루몬, 랩터드라몬, 고지라 주니어, None</td></tr>
+          <tr><td>5</td><td style="text-align: left;">랩터드라몬, None, 바토라, 킹 기도라(헤이세이), 티라노몬, 모스라 레오, None, 메탈그레이몬 "G" 침식 모드, 스트라이크드라몬, 모스라 레오, None, 플라이몬, 바라곤(밀레니엄), None, 그레이몬 "G" 침식 모드, 미니라</td></tr>
+          <tr><td>6</td><td style="text-align: left;">마스터티라노몬, 바라곤(밀레니엄), None, 메카 킹 기도라, 메가로, 고지라 주니어, 스컬그레이몬 "G" 침식 모드, 제트 쟈가, None, 메카고지라(쇼와), 메카 킹 기도라, 바토라, 메탈그레이몬 "G" 침식 모드, None, 고지라(고질라 - 파이널 워즈), 아트라캅테리몬(청)</td></tr>
+          <tr><td>7</td><td style="text-align: left;">메탈그레이몬 "G" 침식 모드, 고지라(초대), None, 고지라(2004), 워가루몬, 몬스터 X, 바토라, 메카 킹 기도라, 카이저 기도라, 메탈그레이몬(바이러스종) "G" 침식 모드, None, 아쿠아 모스라, 요로이 모스라, 바라곤(밀레니엄), None, 몬스터 X</td></tr>
+          <tr><td>8</td><td style="text-align: left;">워가루몬, 킹 기도라, 스컬그레이몬 "G" 침식 모드, None, 아쿠아 모스라, 아트라캅테리몬(청), 고지라(초대), None, 버닝 밀레니엄 고지라, 고지라 주니어, 몬스터 X, 메카고지라(쇼와), 마스터티라노몬, 오르가, None, 메탈그레이몬(바이러스종) "G" 침식 모드</td></tr>
+          <tr><td>9</td><td style="text-align: left;">제트 쟈가, 오르가, None, 워그레이몬 "G" 침식 모드, 요로이 모스라, 헤도라(쇼와), 개틀링 가이강, None, 고지라(고질라 - 파이널 워즈), 카이저 기도라, 메가로, 메탈가루몬, 고지라(2004), None, 메카고지라(헤이세이), 파워드라몬 3식 &lt;개&gt; 모드</td></tr>
+          <tr><td>10</td><td style="text-align: left;">헤도라(쇼와), 슈퍼 고지라, None, 버닝 밀레니엄 고지라, 고지라(고질라 - 파이널 워즈), 킹 기도라, 블랙워그레이몬 "G" 침식 모드, None, 다이너몬, 킹 시사(쇼와), 메탈가루몬 "G" 침식 모드, 카이저 기도라, 워그레이몬 "G" 침식 모드, None, 개틀링 가이강, 메탈가루몬</td></tr>
+          <tr><td>11</td><td style="text-align: left;">킹 기도라, 킹 시사(쇼와), None, 블랙워그레이몬 "G" 침식 모드, 제트 쟈가, 고지라(2004), 파워드라몬 3식 &lt;개&gt; 모드, 메카고지라(헤이세이), None, 요로이 모스라, 버닝 밀레니엄 고지라, 메탈가루몬 "G" 침식 모드, 메가로, None, 다이너몬, 슈퍼 고지라</td></tr>
+          <tr><td>12</td><td style="text-align: left;">고지라(2004), 킹 기도라, None, 파워드라몬 3식 &lt;개&gt; 모드, 슈퍼 고지라, 개틀링 가이강, 다이너몬, 버닝 고지라 (2025), None, 헤도라(쇼와), 카이저 기도라, 슈퍼 고지라, 제트 쟈가, None, 고지라(고질라 - 파이널 워즈), 요로이 모스라</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 배경 해금 탭 -->
+    <div id="manual-bg" style="display:none;">
+      <div class="manual-card">
+        <h3>🖼️ 퀘스트 모드 배경</h3>
+        <table class="manual-table">
+          <tr><th>배경 이름</th><th>해금 조건</th></tr>
+          <tr><td>Corrupted Grid</td><td>스테이지 1 클리어</td></tr>
+          <tr><td>Godzilla Logo</td><td>스테이지 5 클리어</td></tr>
+          <tr><td>G-Cell 배경 2 (일반/침식)</td><td>스테이지 10 클리어</td></tr>
+          <tr><td>Title Screen</td><td>스테이지 15 클리어</td></tr>
+          <tr><td>Godzilla Skin</td><td>스테이지 F 클리어</td></tr>
+          <tr><td>Omegamon: G-Fusion Mode</td><td>스테이지 Ω 클리어</td></tr>
+        </table>
+      </div>
+
+      <div class="manual-card">
+        <h3>📖 도감(육성) 해금 배경</h3>
+        <table class="manual-table">
+          <tr><th>배경 이름</th><th>해금 조건</th></tr>
+          <tr><td>Wilderness</td><td>5종류 괴수 육성</td></tr>
+          <tr><td>Ocean</td><td>10종류 괴수 육성</td></tr>
+          <tr><td>City Seaside</td><td>20종류 괴수 육성</td></tr>
+          <tr><td>Inside City</td><td>30종류 괴수 육성</td></tr>
+          <tr><td>Kachidoki Bridge</td><td>57종류(모든) 괴수 육성</td></tr>
+          <tr><td>Shinjuku Burning</td><td>버닝 고지라 (2025) 육성</td></tr>
+        </table>
+      </div>
+
+      <div class="manual-card">
+        <h3>📡 통신 배틀 해금 배경</h3>
+        <div style="color:var(--dim); font-size:9px; margin-bottom:4px;">* 타 기종은 'Iliad'를 제외한 다른 펜들럼 컬러를 의미합니다.</div>
+        <table class="manual-table">
+          <tr><th>배경 이름</th><th>해금 조건</th></tr>
+          <tr><td>Shobijin</td><td>통신 배틀 50승 달성</td></tr>
+          <tr><td>Lakeside</td><td>타 기종 통신 3회</td></tr>
+          <tr><td>Underwater</td><td>타 기종 통신 5회</td></tr>
+          <tr><td>Castle</td><td>타 기종 통신 8회</td></tr>
+          <tr><td>Flower Field</td><td>타 기종 통신 10회</td></tr>
+          <tr><td>Factories</td><td>타 기종 통신 12회</td></tr>
+          <tr><td>Sky</td><td>타 기종 통신 15회</td></tr>
+          <tr><td>Genshi Continent</td><td>타 기종 통신 18회</td></tr>
+          <tr><td>Ashino Island</td><td>타 기종 통신 20회</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-db" style="display:none; background:#111; padding:12px; border-radius:8px; border:1px solid #333;">
+    <div style="font-size:11px; color:var(--text-white); line-height: 1.6;">
+      <b style="color:var(--accent);">[ 주요 조그레스 조합 ]</b><br>
+      • <b>오메가몬 "G" 융합 모드</b> = 워그레이몬 "G" 침식 모드 + 메탈가루몬 "G" 침식 모드<br>
+      • <b>슈퍼 고지라</b> = 고지라(초대) OR 고지라 주니어 + 킹 기도라(헤이세이/밀레니엄)<br>
+      • <b>고지라 주니어</b> = 리틀 고지라 + 미니라 OR 리틀 고지라<br>
+      • <b>메탈그레이몬 "G" 침식 모드</b> = 리틀 고지라 + 그레이몬 "G" 침식 모드<br>
+      • <b>마스터티라노몬</b> = 티라노몬 + 티라노몬<br>
+      • <b>아쿠아 모스라</b> = 모스라 레오 + 바토라<br>
+      • <b>고지라(고질라 - 파이널 워즈)</b> = 고지라(초대) + 버닝 밀레니엄 고지라<br>
+      • <b>블랙워그레이몬 "G" 침식 모드</b> = 고지라(초대) + 워그레이몬 "G" 침식 모드<br>
+      • <b>메카고지라(헤이세이)</b> = 메카 킹 기도라 + 메카고지라(쇼와)<br>
+    </div>
+  </div>
+
+  <div id="view-settings" style="display:none; background:#111; padding:12px; border-radius:8px; border:1px solid #333;">
+    <div class="manual-card">
+      <h3>🎨 UI 색상 커스터마이징</h3>
+      <div class="color-picker-row">
+        <span>메인 포인트 테마 색상 (Accent)</span>
+        <input type="color" id="themeColorPicker" class="color-picker-input" onchange="setThemeColor(this.value)">
+      </div>
+      <div class="color-picker-row">
+        <span>타이머 숫자 색상</span>
+        <input type="color" id="timerColorPicker" class="color-picker-input" onchange="setTimerColor(this.value)">
+      </div>
+      <button class="btn" style="width:100%; padding:6px; margin-top:4px;" onclick="resetColors()">색상 기본값으로 초기화</button>
+    </div>
+
+    <div class="manual-card">
+      <h3>데이터 내보내기 / 가져오기</h3>
+      <div style="font-size:10px; color:var(--dim); margin-bottom:8px;">텍스트 박스의 코드를 복사하여 다른 브라우저나 기기로 옮길 수 있습니다. 데이터는 행동 시마다 자동 저장됩니다.</div>
+      <textarea id="backupTextData" class="backup-area" placeholder="내보내기를 누르면 데이터가 생성됩니다."></textarea>
+      <div class="btn-group">
+        <button class="btn primary" onclick="exportData()">텍스트 내보내기</button>
+        <button class="btn" style="border-color:var(--gold); color:var(--gold);" onclick="importData()">데이터 가져오기</button>
+      </div>
+      <div style="margin-top:12px; border-top:1px solid #333; padding-top:12px;">
+        <button class="btn danger" style="width:100%; padding:8px;" onclick="resetAllData()">모든 데이터 초기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 한국어 명칭: 나무위키 「디지몬 펜들럼 COLOR」 4.9 고지라 참조.
+  // godzilla_2022 등 연도 표기는 Humulos 도트 식별자를 기준으로 임시 구분.
+  const db = {
+    '깜몬': { stage: 'I', attr: 'Free', img: 'bota', power: 0 },
+    '푸니몬': { stage: 'I', attr: 'Free', img: 'puni', power: 0 },
+    '코로몬': { stage: 'II', attr: 'Free', img: 'koro', power: 0 },
+    '뿔몬': { stage: 'II', attr: 'Free', img: 'tuno', power: 0 },
+    '베이비 고지라': { stage: 'III', attr: 'Virus', img: 'babygodzilla', power: 25 },
+    '아구몬': { stage: 'III', attr: 'Vaccine', img: 'agu', power: 20 },
+    '모스라(유충)': { stage: 'III', attr: 'Data', img: 'mothra_l', power: 14 },
+    '도랏토': { stage: 'III', attr: 'Data', img: 'dorat', power: 22 },
+    '모노드라몬': { stage: 'III', attr: 'Vaccine', img: 'monodra', power: 18 },
+    '파피몬': { stage: 'III', attr: 'Vaccine', img: 'gabu', power: 14 },
+    '미니라(밀레니엄)': { stage: 'IV', attr: 'Virus', img: 'minilla', power: 55 },
+    '리틀 고지라': { stage: 'IV', attr: 'Virus', img: 'littlegodzilla', power: 48 },
+    '그레이몬 "G" 침식 모드': { stage: 'IV', attr: 'Vaccine', img: 'grey_g', power: 50 },
+    '티라노몬': { stage: 'IV', attr: 'Vaccine', img: 'tyrano', power: 40 },
+    '플라이몬': { stage: 'IV', attr: 'Vaccine', img: 'fly', power: 36 },
+    '모스라 레오': { stage: 'IV', attr: 'Data', img: 'mothraleo', power: 44 },
+    '킹 기도라(헤이세이)': { stage: 'IV', attr: 'Data', img: 'kingghidorah', power: 48 },
+    '가이강(밀레니엄)': { stage: 'IV', attr: 'Data', img: 'gigan_2004', power: 40 },
+    '스트라이크드라몬': { stage: 'IV', attr: 'Vaccine', img: 'strikedra', power: 36 },
+    '랩터드라몬': { stage: 'IV', attr: 'Vaccine', img: 'raptordra', power: 36 },
+    '가루몬': { stage: 'IV', attr: 'Vaccine', img: 'garuru', power: 44 },
+    '고지라 주니어': { stage: 'V', attr: 'Virus', img: 'godzillajr', power: 92 },
+    '메탈그레이몬 "G" 침식 모드': { stage: 'V', attr: 'Vaccine', img: 'metalgrey_g', power: 110 },
+    '메탈그레이몬(바이러스종) "G" 침식 모드': { stage: 'V', attr: 'Virus', img: 'metalgrey_vi_g', power: 105 },
+    '스컬그레이몬 "G" 침식 모드': { stage: 'V', attr: 'Vaccine', img: 'skullgrey_g', power: 100 },
+    '고지라(초대)': { stage: 'V', attr: 'Virus', img: 'godzilla_1954', power: 88 },
+    '마스터티라노몬': { stage: 'V', attr: 'Vaccine', img: 'mastertyrano', power: 88 },
+    '아트라캅테리몬(청)': { stage: 'V', attr: 'Vaccine', img: 'atlurkabuteri', power: 96 },
+    '바토라': { stage: 'V', attr: 'Data', img: 'battra', power: 84 },
+    '아쿠아 모스라': { stage: 'V', attr: 'Data', img: 'aquamothra', power: 92 },
+    '메카 킹 기도라': { stage: 'V', attr: 'Data', img: 'mechakingghidorah', power: 80 },
+    '몬스터 X': { stage: 'V', attr: 'Data', img: 'monsterx', power: 100 },
+    '메카고지라(쇼와)': { stage: 'V', attr: 'Data', img: 'mechagodzilla_1974', power: 110 },
+    '바라곤(밀레니엄)': { stage: 'V', attr: 'Data', img: 'baragon', power: 80 },
+    '워가루몬': { stage: 'V', attr: 'Vaccine', img: 'weregaruru', power: 96 },
+    '버닝 밀레니엄 고지라': { stage: 'VI', attr: 'Virus', img: 'godzilla_1999', power: 175 },
+    '파이널워즈 고지라': { stage: 'VI', attr: 'Virus', img: 'godzilla_2004', power: 180 },
+    '고지라(2022)': { stage: 'VI', attr: 'Virus', img: 'godzilla_2022', power: 170 },
+    '워그레이몬 "G" 침식 모드': { stage: 'VI', attr: 'Vaccine', img: 'wargrey_g', power: 185 },
+    '다이너몬': { stage: 'VI', attr: 'Vaccine', img: 'dino', power: 150 },
+    '요로이 모스라': { stage: 'VI', attr: 'Data', img: 'armormothra', power: 155 },
+    '파워드라몬 3식 <개> 모드': { stage: 'VI', attr: 'Vaccine', img: 'mugendra_m', power: 185 },
+    '메카고지라(헤이세이)': { stage: 'VI', attr: 'Data', img: 'mechagodzilla', power: 160 },
+    '슈퍼 메카고지라': { stage: 'M', attr: 'Data', img: 'supermechagodzilla', power: 160 },
+    '기도라': { stage: 'VI', attr: 'Data', img: 'kingghidorah_2001', power: 175 },
+    '카이저 기도라': { stage: 'VI', attr: 'Data', img: 'keizerghidorah', power: 160 },
+    '제트 쟈가': { stage: 'VI', attr: 'Data', img: 'jetjaguar', power: 150 },
+    '킹 시사(쇼와)': { stage: 'VI', attr: 'Data', img: 'kingcaesar', power: 140 },
+    '메탈가루몬': { stage: 'VI', attr: 'Vaccine', img: 'metalgaruru', power: 150 },
+    '메탈가루몬 "G" 침식 모드': { stage: 'VI', attr: 'Vaccine', img: 'metalgaruru_g', power: 170 },
+    '개틀링 가이강': { stage: 'VI', attr: 'Data', img: 'gatlinggigan', power: 155 },
+    '블랙워그레이몬 "G" 침식 모드': { stage: 'VI', attr: 'Virus', img: 'blackwargrey_g', power: 175 },
+    '메가로': { stage: 'VI', attr: 'Data', img: 'megalon', power: 145 },
+    '오르가': { stage: 'VI', attr: 'Virus', img: 'orga', power: 150, minWeight: 60, sleepTime: "22:00", energy: 60, heartLossMinutes: 58, battleAllowed: true, jogressAllowed: false, libraryNumber: 30, encounterTimeGroup: 4, encounterOpponentGroup: 10 },
+    '헤도라(쇼와)': { stage: 'VI', attr: 'Data', img: 'hedorah', power: 170, minWeight: 50, sleepTime: "23:00", energy: 60, heartLossMinutes: 66, battleAllowed: true, jogressAllowed: false, libraryNumber: 31, encounterTimeGroup: 6, encounterOpponentGroup: 11 },
+    '슈퍼 고지라': { stage: 'VI', attr: 'Virus', img: 'supergodzilla', power: 185, minWeight: 60, sleepTime: "23:00", energy: 60, heartLossMinutes: 48, battleAllowed: true, jogressAllowed: false, libraryNumber: 55, encounterTimeGroup: 4, encounterOpponentGroup: 9 },
+    '버닝 고지라 (2025)': { stage: 'VI+', attr: 'Virus', img: 'burninggodzilla_2025', power: 200 },
+    '오메가몬 "G" 융합 모드': { stage: 'VI+', attr: 'Vaccine', img: 'omega_g', power: 200 }
+  };
+
+  // v2.0: Humulos 원본 HTML의 연결선과 조건 아이콘을 재추출한 단일 진화 자료.
+  // 경로 별 아이콘은 원본의 파일 식별자 그대로 보관한다.
+  // 다른 조건 미충족(other)은 같은 출발점의 명시 조건들을 검사한 후 처리한다.
+  const EVOLUTION_ROUTES = [{"from":"koro","to":"babygodzilla","icons":["mistake02","gcellPen1"],"kind":"normal","family":"godzilla"},{"from":"koro","to":"agu","icons":["other"],"kind":"normal","family":"godzilla"},{"from":"koro","to":"mothra_l","icons":["mistake34","gcellPen0"],"kind":"normal","family":"godzilla"},{"from":"babygodzilla","to":"minilla","icons":["mistake03","gcellPen1"],"kind":"normal","family":"godzilla"},{"from":"babygodzilla","to":"littlegodzilla","icons":["other"],"kind":"normal","family":"godzilla"},{"from":"agu","to":"grey_g","icons":["mistake03","gcellPen1"],"kind":"normal","family":"godzilla"},{"from":"agu","to":"tyrano","icons":["other"],"kind":"normal","family":"godzilla"},{"from":"mothra_l","to":"fly","icons":["mistake03","gcellPen1"],"kind":"normal","family":"godzilla"},{"from":"mothra_l","to":"mothraleo","icons":["other"],"kind":"normal","family":"godzilla"},{"from":"minilla","to":"godzillajr","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"littlegodzilla","to":"godzillajr","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"minilla","to":"godzilla_1954","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"littlegodzilla","to":"godzilla_1954","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"grey_g","to":"godzilla_1954","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"grey_g","to":"metalgrey_g","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"tyrano","to":"metalgrey_g","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"tyrano","to":"mastertyrano","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"fly","to":"atlurkabuteri","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"fly","to":"battra","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"mothraleo","to":"battra","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"mothraleo","to":"aquamothra","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"godzillajr","to":"godzilla_2022","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"godzillajr","to":"godzilla_2004","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"godzilla_1954","to":"godzilla_2004","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"skullgrey_g","to":"mugendra_m","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"skullgrey_g","to":"blackwargrey_g","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"metalgrey_vi_g","to":"blackwargrey_g","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"godzilla_1954","to":"wargrey_g","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"metalgrey_g","to":"wargrey_g","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"mastertyrano","to":"wargrey_g","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"metalgrey_vi_g","to":"dino","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"metalgrey_g","to":"dino","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"mastertyrano","to":"dino","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"atlurkabuteri","to":"dino","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"atlurkabuteri","to":"megalon","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"battra","to":"megalon","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"aquamothra","to":"megalon","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"battra","to":"armormothra","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"aquamothra","to":"armormothra","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"godzilla"},{"from":"godzilla_1999","to":"burninggodzilla_2025","icons":["mistake02","gcellPen1","battlesHor","totalbattles30"],"kind":"normal","family":"godzilla"},{"from":"wargrey_g","to":"omega_g","icons":["jogresswith"],"kind":"jogress","family":"godzilla"},{"from":"tuno","to":"dorat","icons":["mistake02","gcellPen1"],"kind":"normal","family":"ghidorah"},{"from":"tuno","to":"monodra","icons":["other"],"kind":"normal","family":"ghidorah"},{"from":"tuno","to":"gabu","icons":["mistake34","gcellPen0"],"kind":"normal","family":"ghidorah"},{"from":"dorat","to":"kingghidorah","icons":["mistake03","gcellPen1"],"kind":"normal","family":"ghidorah"},{"from":"monodra","to":"gigan_2004","icons":["mistake03","gcellPen1"],"kind":"normal","family":"ghidorah"},{"from":"monodra","to":"strikedra","icons":["other"],"kind":"normal","family":"ghidorah"},{"from":"dorat","to":"raptordra","icons":["other"],"kind":"normal","family":"ghidorah"},{"from":"monodra","to":"raptordra","icons":["mistake4","gcellPen0"],"kind":"normal","family":"ghidorah"},{"from":"gabu","to":"raptordra","icons":["mistake03","gcellPen1"],"kind":"normal","family":"ghidorah"},{"from":"gabu","to":"garuru","icons":["other"],"kind":"normal","family":"ghidorah"},{"from":"kingghidorah","to":"mechakingghidorah","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"kingghidorah","to":"monsterx","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"gigan_2004","to":"monsterx","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"strikedra","to":"monsterx","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"gigan_2004","to":"mechagodzilla_1974","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"strikedra","to":"mechagodzilla_1974","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"raptordra","to":"mechagodzilla_1974","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"raptordra","to":"baragon","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"garuru","to":"baragon","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"garuru","to":"weregaruru","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"mechakingghidorah","to":"kingghidorah_2001","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"monsterx","to":"keizerghidorah","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"gigan_2004","to":"gatlinggigan","icons":["mistake02","blank","battlesHor","totalbattles50"],"kind":"normal","family":"ghidorah"},{"from":"mechakingghidorah","to":"mechagodzilla","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"mechagodzilla_1974","to":"mechagodzilla","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"monsterx","to":"jetjaguar","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"mechagodzilla_1974","to":"jetjaguar","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"baragon","to":"kingcaesar","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"weregaruru","to":"kingcaesar","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"baragon","to":"metalgaruru","icons":["mistake02","gcellPen0","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"weregaruru","to":"metalgaruru","icons":["mistake02","gcellPen1","battlesHor"],"kind":"normal","family":"ghidorah"},{"from":"mechagodzilla","to":"supermechagodzilla","icons":[],"kind":"unverified","family":"ghidorah"},{"from":"metalgaruru","to":"metalgaruru_g","icons":["defeatg10"],"kind":"normal","family":"ghidorah"},{"from":"metalgaruru_g","to":"omega_g","icons":["jogresswith"],"kind":"jogress","family":"ghidorah"},{"from":"bota","to":"koro","icons":[],"kind":"normal","family":"godzilla"},{"from":"puni","to":"tuno","icons":[],"kind":"normal","family":"ghidorah"},{"from":"godzilla_1954","to":"skullgrey_g","icons":["pengzDeath"],"kind":"death","family":"godzilla"},{"from":"godzillajr","to":"skullgrey_g","icons":["pengzDeath"],"kind":"death","family":"godzilla"},{"from":"metalgrey_g","to":"skullgrey_g","icons":["pengzDeath"],"kind":"death","family":"godzilla"},{"from":"godzilla_1954","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"godzillajr","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"metalgrey_g","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"mastertyrano","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"battra","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"aquamothra","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"metalgrey_vi_g","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"atlurkabuteri","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"skullgrey_g","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"mechakingghidorah","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"monsterx","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"mechagodzilla_1974","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"baragon","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"},{"from":"weregaruru","to":"hedorah","icons":["poop","winRatio80"],"kind":"special","family":"both","source":"Humulos creature page supplied by user"}];
+  const SPECIAL_EVOLUTIONS = [{"to":"skullgrey_g","icons":["pengzDeath"],"kind":"special"},{"to":"metalgrey_vi_g","icons":["jogressOnly"],"kind":"special"},{"to":"godzilla_1999","icons":["jogressOnly"],"kind":"special"},{"to":"orga","icons":["jogressOnly"],"kind":"special"},{"to":"supergodzilla","icons":["jogressOnly"],"kind":"special"},{"to":"hedorah","icons":["poop","winRatio80"],"kind":"special","sourceCount":14}];
+
+  const questDB = [
+    { id: 1, name: "Stage 1", enemies: ['모노드라몬', '아구몬', '모스라(유충)'], unlock: "Corrupted Grid" },
+    { id: 2, name: "Stage 2", enemies: ['파피몬', '도랏토', '가루몬'], unlock: "" },
+    { id: 3, name: "Stage 3", enemies: ['아구몬', '베이비 고지라', '그레이몬 "G" 침식 모드'], unlock: "" },
+    { id: 4, name: "Stage 4", enemies: ['도랏토', '스트라이크드라몬', '킹 기도라(헤이세이)'], unlock: "" },
+    { id: 5, name: "Stage 5", enemies: ['미니라(밀레니엄)', '모스라 레오', '가이강(밀레니엄)', '고지라(초대)'], unlock: "Godzilla Logo" },
+    { id: 6, name: "Stage 6", enemies: ['베이비 고지라', '리틀 고지라', '고지라 주니어'], unlock: "" },
+    { id: 7, name: "Stage 7", enemies: ['랩터드라몬', '마스터티라노몬', '메탈그레이몬 "G" 침식 모드'], unlock: "" },
+    { id: 8, name: "Stage 8", enemies: ['고지라(초대)', '킹 시사(쇼와)', '메카고지라(쇼와)'], unlock: "" },
+    { id: 9, name: "Stage 9", enemies: ['플라이몬', '모스라 레오', '아트라캅테리몬(청)', '아쿠아 모스라'], unlock: "" },
+    { id: 10, name: "Stage 10", enemies: ['가이강(밀레니엄)', '몬스터 X', '카이저 기도라'], unlock: "Ghidorah Digitama, G-Cell BG 2" },
+    { id: 11, name: "Stage 11", enemies: ['워가루몬', '바라곤(밀레니엄)', '메탈가루몬'], unlock: "" },
+    { id: 12, name: "Stage 12", enemies: ['티라노몬', '마스터티라노몬', '다이너몬'], unlock: "" },
+    { id: 13, name: "Stage 13", enemies: ['바토라', '메가로', '아쿠아 모스라', '요로이 모스라'], unlock: "" },
+    { id: 14, name: "Stage 14", enemies: ['메카고지라(쇼와)', '메카 킹 기도라', '메카고지라(헤이세이)'], unlock: "" },
+    { id: 15, name: "Stage 15", enemies: ['모스라 레오', '바라곤(밀레니엄)', '파이널워즈 고지라'], unlock: "Title Screen" },
+    { id: 16, name: "Stage 16", enemies: ['고지라(2022)', '헤도라(쇼와)', '개틀링 가이강'], unlock: "" },
+    { id: 17, name: "Stage 17", enemies: ['스컬그레이몬 "G" 침식 모드', '메탈그레이몬(바이러스종) "G" 침식 모드', '파워드라몬 3식 <개> 모드', '블랙워그레이몬 "G" 침식 모드'], unlock: "" },
+    { id: 18, name: "Stage 18", enemies: ['가이강(밀레니엄)', '메가로', '고지라(2022)'], unlock: "" },
+    { id: 19, name: "Stage 19", enemies: ['오르가', '버닝 밀레니엄 고지라', '슈퍼 고지라'], unlock: "" },
+    { id: 20, name: "Stage 20", enemies: ['헤도라(쇼와)', '가이강(밀레니엄)', '제트 쟈가', '기도라'], unlock: "" },
+    { id: 'F', name: "Stage F", enemies: ['버닝 밀레니엄 고지라', '고지라(2022)', '파이널워즈 고지라', '버닝 고지라 (2025)'], unlock: "Godzilla Skin" },
+    { id: 'O', name: "Stage Ω", enemies: ['메탈가루몬 "G" 침식 모드', '워그레이몬 "G" 침식 모드', '오메가몬 "G" 융합 모드'], unlock: "Omegamon: G-Fusion Mode BG" }
+  ];
+
+
+  // Humulos PenGZ Jogress 원본 표: 행은 진화 주체, 열은 조그레스 파트너.
+  // 순서를 바꾸면 결과가 달라질 수 있으므로 방향성을 유지한다.
+  const jogressMatrix = [{"stage":"IV","partners":["minilla","littlegodzilla","grey_g","tyrano","fly","mothraleo","kingghidorah","gigan_2004","strikedra","raptordra","garuru","other"],"rows":[["minilla",["godzilla_1954","godzillajr","godzilla_1954","metalgrey_g","battra","battra","monsterx","mechagodzilla_1974","metalgrey_vi_g","metalgrey_vi_g","monsterx","metalgrey_vi_g"]],["littlegodzilla",["godzillajr","godzillajr","metalgrey_g","metalgrey_g","battra","battra","monsterx","mechagodzilla_1974","metalgrey_vi_g","metalgrey_vi_g","monsterx","metalgrey_vi_g"]],["grey_g",["godzilla_1954","metalgrey_g","metalgrey_g","mastertyrano","mastertyrano","atlurkabuteri","monsterx","mechagodzilla_1974","metalgrey_vi_g","metalgrey_vi_g","monsterx","metalgrey_vi_g"]],["tyrano",["metalgrey_g","metalgrey_g","mastertyrano","mastertyrano","mastertyrano","battra","baragon","baragon","mastertyrano","weregaruru","atlurkabuteri","mastertyrano"]],["fly",["battra","battra","mastertyrano","mastertyrano","battra","battra","atlurkabuteri","atlurkabuteri","mastertyrano","weregaruru","atlurkabuteri","atlurkabuteri"]],["mothraleo",["battra","battra","atlurkabuteri","battra","battra","aquamothra","aquamothra","aquamothra","atlurkabuteri","atlurkabuteri","atlurkabuteri","atlurkabuteri"]],["kingghidorah",["monsterx","monsterx","monsterx","baragon","atlurkabuteri","aquamothra","mechakingghidorah","mechakingghidorah","baragon","baragon","baragon","atlurkabuteri"]],["gigan_2004",["mechagodzilla_1974","mechagodzilla_1974","mechagodzilla_1974","baragon","atlurkabuteri","aquamothra","mechakingghidorah","monsterx","baragon","baragon","baragon","atlurkabuteri"]],["strikedra",["metalgrey_vi_g","metalgrey_vi_g","metalgrey_vi_g","mastertyrano","mastertyrano","atlurkabuteri","baragon","baragon","mechagodzilla_1974","weregaruru","weregaruru","weregaruru"]],["raptordra",["metalgrey_vi_g","metalgrey_vi_g","metalgrey_vi_g","weregaruru","weregaruru","atlurkabuteri","baragon","baragon","weregaruru","weregaruru","weregaruru","weregaruru"]],["garuru",["monsterx","monsterx","monsterx","atlurkabuteri","atlurkabuteri","atlurkabuteri","baragon","baragon","weregaruru","weregaruru","weregaruru","weregaruru"]]]},{"stage":"V","partners":["godzilla_1954","godzillajr","metalgrey_g","mastertyrano","battra","aquamothra","skullgrey_g","metalgrey_vi_g","atlurkabuteri","mechakingghidorah","monsterx","mechagodzilla_1974","baragon","weregaruru","other"],"rows":[["godzilla_1954",["godzilla_2004","godzilla_1999","wargrey_g","blackwargrey_g","orga","orga","godzilla_2022","blackwargrey_g","blackwargrey_g","supergodzilla","orga","mugendra_m","orga","metalgaruru_g","blackwargrey_g"]],["godzillajr",["godzilla_1999","godzilla_2022","wargrey_g","blackwargrey_g","orga","orga","godzilla_2004","blackwargrey_g","blackwargrey_g","supergodzilla","orga","mugendra_m","orga","metalgaruru_g","blackwargrey_g"]],["metalgrey_g",["wargrey_g","wargrey_g","wargrey_g","blackwargrey_g","orga","orga","blackwargrey_g","wargrey_g","blackwargrey_g","mechagodzilla","orga","mugendra_m","orga","metalgaruru_g","blackwargrey_g"]],["mastertyrano",["blackwargrey_g","blackwargrey_g","blackwargrey_g","dino","armormothra","armormothra","blackwargrey_g","blackwargrey_g","dino","mechagodzilla","jetjaguar","metalgaruru","metalgaruru","dino","dino"]],["battra",["orga","orga","orga","armormothra","megalon","armormothra","orga","orga","megalon","keizerghidorah","kingghidorah_2001","kingcaesar","megalon","megalon","megalon"]],["aquamothra",["orga","orga","orga","armormothra","armormothra","armormothra","orga","orga","megalon","keizerghidorah","kingghidorah_2001","kingcaesar","megalon","megalon","megalon"]],["skullgrey_g",["godzilla_2022","godzilla_2004","blackwargrey_g","blackwargrey_g","orga","orga","mugendra_m","mugendra_m","blackwargrey_g","mechagodzilla","orga","mechagodzilla","orga","metalgaruru_g","blackwargrey_g"]],["metalgrey_vi_g",["blackwargrey_g","blackwargrey_g","wargrey_g","blackwargrey_g","orga","orga","mugendra_m","wargrey_g","blackwargrey_g","orga","orga","mugendra_m","orga","metalgaruru_g","metalgaruru"]],["atlurkabuteri",["blackwargrey_g","blackwargrey_g","blackwargrey_g","dino","megalon","megalon","blackwargrey_g","blackwargrey_g","megalon","armormothra","armormothra","metalgaruru","metalgaruru","dino","metalgaruru"]],["mechakingghidorah",["supergodzilla","supergodzilla","mechagodzilla","mechagodzilla","keizerghidorah","keizerghidorah","mechagodzilla","orga","armormothra","kingghidorah_2001","kingghidorah_2001","keizerghidorah","keizerghidorah","jetjaguar","metalgaruru"]],["monsterx",["orga","orga","orga","jetjaguar","kingghidorah_2001","kingghidorah_2001","orga","orga","armormothra","kingghidorah_2001","keizerghidorah","mechagodzilla","kingcaesar","jetjaguar","metalgaruru"]],["mechagodzilla_1974",["mugendra_m","mugendra_m","mugendra_m","metalgaruru","kingcaesar","kingcaesar","mechagodzilla","mugendra_m","metalgaruru","keizerghidorah","mechagodzilla","mechagodzilla","jetjaguar","metalgaruru","metalgaruru"]],["baragon",["orga","orga","orga","metalgaruru","megalon","megalon","orga","orga","metalgaruru","keizerghidorah","kingcaesar","jetjaguar","kingcaesar","kingcaesar","metalgaruru"]],["weregaruru",["metalgaruru_g","metalgaruru_g","metalgaruru_g","dino","megalon","megalon","metalgaruru_g","metalgaruru_g","dino","jetjaguar","jetjaguar","metalgaruru","kingcaesar","metalgaruru","metalgaruru"]]]},{"stage":"OTHER","partners":["godzilla_1954","godzillajr","wargrey_g","kingghidorah","kingghidorah_2001","metalgaruru_g"],"rows":[["godzilla_1954",[null,null,null,"supergodzilla","supergodzilla",null]],["godzillajr",[null,null,null,"supergodzilla","supergodzilla",null]],["wargrey_g",[null,null,null,null,null,"omega_g"]],["kingghidorah",["supergodzilla","supergodzilla",null,null,null,null]],["kingghidorah_2001",["supergodzilla","supergodzilla",null,null,null,null]],["metalgaruru_g",[null,null,"omega_g",null,null,null]]]}];
+  const imgToName = Object.fromEntries(Object.entries(db).map(([name,info]) => [info.img,name]));
+  const jogressDB = jogressMatrix.flatMap(group => group.rows.flatMap(([source,results]) => results.flatMap((result,index) => {
+    if (!result) return [];
+    return [{ p1: imgToName[source], p2: imgToName[group.partners[index]] || null,
+      result: imgToName[result], stage: group.stage, external: group.partners[index] === 'other',
+      sourceImg: source, partnerImg: group.partners[index], resultImg: result }];
+  })));
+  const getJogressFor = id => jogressDB.filter(c => c.p1 === id);
+  const getSlotJogress = (id, partner) => jogressDB.filter(c => c.p1 === id && !c.external && c.p2 === partner);
+  // 도감/진화표/예측기는 오직 EVOLUTION_ROUTES를 읽는다.
+  const getUnifiedRoutes = id => EVOLUTION_ROUTES.filter(e => e.from === db[id]?.img && e.kind !== 'jogress')
+    .map(e => ({ ...e, t: imgToName[e.to], r: describeEvolutionRule(e) })).filter(e => e.t);
+
+  let activeSlot = 1;
+  let slotData = {
+    1: { id: '고지라(초대)', miss: 0, gPoints: 0, bWin: 0, bTot: 0, showArt: false, questCleared: {}, remainSec: 0, isCold: false, callType: 'none', callRemainSec: 0, trainCount: 0, isFullStrength: false, isTraited: false, memo: '' },
+    2: { id: '킹 기도라(헤이세이)', miss: 0, gPoints: 0, bWin: 0, bTot: 0, showArt: false, questCleared: {}, remainSec: 0, isCold: false, callType: 'none', callRemainSec: 0, trainCount: 0, isFullStrength: false, isTraited: false, memo: '' }
+  };
+
+  let currentThemeColor = localStorage.getItem('pengz_theme_color') || '#00ffcc';
+  let currentTimerColor = localStorage.getItem('pengz_timer_color') || '#00ffcc';
+
+  function initPreferences() {
+    document.documentElement.style.setProperty('--accent', currentThemeColor);
+    document.documentElement.style.setProperty('--timer-color', currentTimerColor);
+    const cpTheme = document.getElementById('themeColorPicker');
+    if (cpTheme) cpTheme.value = currentThemeColor;
+    const cpTimer = document.getElementById('timerColorPicker');
+    if (cpTimer) cpTimer.value = currentTimerColor;
+  }
+
+  function setThemeColor(hex) {
+    currentThemeColor = hex;
+    document.documentElement.style.setProperty('--accent', hex);
+    localStorage.setItem('pengz_theme_color', hex);
+  }
+
+  function setTimerColor(hex) {
+    currentTimerColor = hex;
+    document.documentElement.style.setProperty('--timer-color', hex);
+    localStorage.setItem('pengz_timer_color', hex);
+    renderTimerUI();
+  }
+
+  function resetColors() {
+    setThemeColor('#00ffcc');
+    setTimerColor('#00ffcc');
+    document.getElementById('themeColorPicker').value = '#00ffcc';
+    document.getElementById('timerColorPicker').value = '#00ffcc';
+  }
+
+  function loadData() {
+    const saved = localStorage.getItem('pengz_save');
+    if (saved) {
+      try {
+        let parsed = JSON.parse(saved);
+        for(let i=1; i<=2; i++) {
+          if(parsed[i].gPoints === undefined) parsed[i].gPoints = 0;
+          if(parsed[i].trainCount === undefined) parsed[i].trainCount = 0;
+          if(parsed[i].isFullStrength === undefined) parsed[i].isFullStrength = false;
+          if(parsed[i].isTraited === undefined) parsed[i].isTraited = false;
+          if(parsed[i].miss === undefined) parsed[i].miss = 0;
+          if(parsed[i].memo === undefined) parsed[i].memo = '';
+          
+          const nameMigrations = {
+            '미니라': '미니라(밀레니엄)',
+            '고지라(2004)': '파이널워즈 고지라',
+            '고지라(고질라 - 파이널 워즈)': '고지라(2022)',
+            '킹 기도라': '기도라'
+          };
+          if (nameMigrations[parsed[i].id]) parsed[i].id = nameMigrations[parsed[i].id];
+          if(parsed[i].id === 'Godzilla (1954)') parsed[i].id = '고지라(초대)';
+          if(parsed[i].id === 'King Ghidorah (1991)') parsed[i].id = '킹 기도라(헤이세이)';
+        }
+        slotData = parsed;
+        [1,2].forEach(i => fillEvolutionData(slotData[i]));
+      } catch (e) {}
+    }
+  }
+
+  function fillEvolutionData(s) {
+    if (s.lifetimeBattles === undefined) s.lifetimeBattles = null;
+    if (s.poopCount === undefined) s.poopCount = null;
+    if (s.gKills === undefined) s.gKills = null;
+    if (s.gPoints === undefined) s.gPoints = 0;
+    if (s.bTot === undefined) s.bTot = 0;
+    if (s.bWin === undefined) s.bWin = 0;
+  }
+  function setSpecialStat(key, value) {
+    if (!['lifetimeBattles', 'poopCount', 'gKills'].includes(key)) return;
+    const text = String(value).trim();
+    slotData[activeSlot][key] = text === '' ? null : Math.max(0, Math.floor(Number(text) || 0));
+    saveData();
+    analyzePrediction();
+  }
+
+  function saveData() {
+    localStorage.setItem('pengz_save', JSON.stringify(slotData));
+  }
+
+  function initDBSelect() {
+    let options = '';
+    for (let key in db) {
+      options += `<option value="${key}">${key} [${db[key].stage}]</option>`;
+    }
+    const s1 = document.getElementById('selDigi1');
+    if (s1) { s1.innerHTML = options; s1.value = slotData[1].id; }
+    const s2 = document.getElementById('selDigi2');
+    if (s2) { s2.innerHTML = options; s2.value = slotData[2].id; }
+  }
+
+  function setTab(tab) {
+    const tabs = ['main', 'chart', 'quest', 'manual', 'db', 'settings'];
+    tabs.forEach(t => {
+      const view = document.getElementById(`view-${t}`);
+      const btn = document.getElementById(`tab-${t}`);
+      if (view) view.style.display = t === tab ? 'block' : 'none';
+      if (btn) btn.className = t === tab ? 'tab-btn active' : 'tab-btn';
+    });
+    
+    if (tab === 'quest') renderQuestList();
+    if (tab === 'chart') renderEvolutionChart();
+  }
+
+  function setManualTab(tab) {
+    const tabs = ['basic', 'raise', 'battle', 'bg'];
+    tabs.forEach(t => {
+      const view = document.getElementById(`manual-${t}`);
+      const btn = document.getElementById(`mtab-${t}`);
+      if (view) view.style.display = t === tab ? 'block' : 'none';
+      if (btn) btn.className = t === tab ? 'sub-tab-btn active' : 'sub-tab-btn';
+    });
+  }
+
+  function selectSlot(num) {
+    activeSlot = num;
+    const s1 = document.getElementById('slot1');
+    if (s1) s1.className = num === 1 ? 'slot-box active' : 'slot-box';
+    const s2 = document.getElementById('slot2');
+    if (s2) s2.className = num === 2 ? 'slot-box active' : 'slot-box';
+    
+    const asn = document.getElementById('activeSlotName');
+    if (asn) asn.innerText = `슬롯 ${num}`;
+
+    const memoInput = document.getElementById('slotMemoInput');
+    if (memoInput) memoInput.value = slotData[num].memo || '';
+    
+    const info = db[slotData[num].id];
+    if (info) updateTimerDropdown(info.stage);
+    
+    analyzePrediction();
+    renderJogressGuide();
+    renderTimerUI();
+    renderCallUI();
+    renderTrainUI();
+    updateBonusUI();
+    if (document.getElementById('view-quest')?.style.display === 'block') renderQuestList();
+  }
+
+  function updateSlotMemo(val) {
+    slotData[activeSlot].memo = val;
+    saveData();
+  }
+
+  function updateTimerDropdown(stage) {
+    const sel = document.getElementById('timerSelect');
+    if (!sel) return;
+    if (stage === 'I') sel.value = "600";
+    else if (stage === 'II') sel.value = "43200";
+    else if (stage === 'III') sel.value = "86400";
+    else if (stage === 'IV') sel.value = "115200";
+    else if (stage === 'V') sel.value = "144000";
+    else if (stage === 'VI' || stage === 'VI+' || stage === 'M') sel.value = "172800";
+  }
+
+  function updateDigi(num) {
+    const sel = document.getElementById(`selDigi${num}`);
+    if (sel) {
+      slotData[num].id = sel.value;
+      saveData();
+      renderSlot(num);
+    }
+  }
+
+  function applyCareMistakePenalty(slotNum, times = 1) {
+    const s = slotData[slotNum];
+    const info = db[s.id];
+    let pen = 1;
+    if (info && info.stage === 'IV') pen = 2;
+    else if (info && (info.stage === 'V' || info.stage === 'VI' || info.stage === 'VI+')) pen = 4;
+    
+    s.miss = (parseInt(s.miss) || 0) + times;
+    s.gPoints = Math.max(0, (parseInt(s.gPoints) || 0) - (pen * times));
+  }
+
+  function adj(stat, val) {
+    if (stat === 'miss' && val > 0) {
+      applyCareMistakePenalty(activeSlot, val);
+    } else {
+      let currentVal = parseInt(slotData[activeSlot][stat]) || 0;
+      slotData[activeSlot][stat] = Math.max(0, currentVal + val);
+    }
+    saveData();
+    renderSlot(activeSlot);
+  }
+
+  function adjCell(val) {
+    const s = slotData[activeSlot];
+    const info = db[s.id];
+    let ptsPerCell = 16;
+    if (info && (info.stage === 'I' || info.stage === 'II')) ptsPerCell = 2;
+    else if (info && info.stage === 'III') ptsPerCell = 4;
+    else if (info && info.stage === 'IV') ptsPerCell = 8;
+
+    let currentPts = parseInt(s.gPoints) || 0;
+    s.gPoints = Math.max(0, currentPts + (val * ptsPerCell));
+    saveData();
+    renderSlot(activeSlot);
+  }
+
+  function recordBattle(isWin) {
+    const s = slotData[activeSlot];
+    s.bTot = (parseInt(s.bTot) || 0) + 1;
+    s.lifetimeBattles = (parseInt(s.lifetimeBattles) || 0) + 1;
+    if (isWin) s.bWin = (parseInt(s.bWin) || 0) + 1;
+    saveData();
+    renderSlot(activeSlot);
+  }
+
+  function resetBattle() {
+    slotData[activeSlot].bTot = 0;
+    slotData[activeSlot].bWin = 0;
+    saveData();
+    renderSlot(activeSlot);
+  }
+
+  function toggleImageMode(num) {
+    slotData[num].showArt = !slotData[num].showArt;
+    saveData();
+    if (event) event.stopPropagation();
+    selectSlot(num);
+    renderSlot(num);
+  }
+
+  function toggleBonus(type) {
+    slotData[activeSlot][type] = !slotData[activeSlot][type];
+    saveData();
+    renderSlot(activeSlot);
+    updateBonusUI();
+  }
+
+  function updateBonusUI() {
+    const s = slotData[activeSlot];
+    const btnStr = document.getElementById('btnStr');
+    if (btnStr) btnStr.className = s.isFullStrength ? "btn bonus-active" : "btn";
+    const btnTrait = document.getElementById('btnTrait');
+    if (btnTrait) btnTrait.className = s.isTraited ? "btn bonus-active" : "btn";
+  }
+
+  function executeTraining(hits) {
+    const s = slotData[activeSlot];
+    const isAnguirus = (s.trainCount === 4);
+    let ptsToAdd = 0;
+
+    if (hits === 5) ptsToAdd = isAnguirus ? 8 : 2;
+    else if (hits === 3) ptsToAdd = isAnguirus ? 4 : 1;
+    else if (hits === 1) ptsToAdd = 0;
+    else if (hits === 0) ptsToAdd = isAnguirus ? -2 : -1;
+
+    let currentPts = parseInt(s.gPoints) || 0;
+    s.gPoints = Math.max(0, currentPts + ptsToAdd);
+    s.trainCount = ((parseInt(s.trainCount) || 0) + 1) % 5;
+    
+    let msg = isAnguirus ? `[안기라스 훈련] ` : `[일반 훈련] `;
+    if (hits === 5) msg += `메가히트! G포인트 ${ptsToAdd > 0 ? '+'+ptsToAdd : ptsToAdd}`;
+    else if (hits === 3) msg += `성공! G포인트 ${ptsToAdd > 0 ? '+'+ptsToAdd : ptsToAdd}`;
+    else if (hits === 1) msg += `보통! G포인트 변화 없음`;
+    else msg += `실패... G포인트 ${ptsToAdd}`;
+
+    alert(msg);
+    saveData();
+    renderTrainUI();
+    renderSlot(activeSlot);
+  }
+
+  function resetTraining() {
+    slotData[activeSlot].trainCount = 0;
+    saveData();
+    renderTrainUI();
+  }
+
+  function resetGPoints() {
+    slotData[activeSlot].gPoints = 0;
+    saveData();
+    renderSlot(activeSlot);
+  }
+
+  function renderTrainUI() {
+    const s = slotData[activeSlot];
+    const ui = document.getElementById('trainCountUI');
+    if (ui) ui.innerText = (parseInt(s.trainCount) || 0) + 1;
+  }
+
+  function renderSlot(num) {
+    const s = slotData[num] || {};
+    const info = db[s.id] || { stage: '?', attr: '?', img: '', power: 0 };
+    
+    const imgEl = document.getElementById(`img${num}`);
+    if (imgEl) {
+      if (info.img) {
+        const baseUrl = s.showArt ? 'https://humulos.com/digimon/images/art/' : 'https://humulos.com/digimon/images/dot/pengz/';
+        const ext = s.showArt ? '.jpg' : '.gif';
+        imgEl.src = baseUrl + info.img + ext;
+        imgEl.style.display = 'block';
+      } else {
+        imgEl.style.display = 'none';
+      }
+    }
+
+    let attrColor = 'tag-fr';
+    if(info.attr === 'Vaccine') attrColor = 'tag-va';
+    if(info.attr === 'Data') attrColor = 'tag-da';
+    if(info.attr === 'Virus') attrColor = 'tag-vi';
+
+    let ptsPerCell = 16;
+    if (info.stage === 'I' || info.stage === 'II') ptsPerCell = 2;
+    else if (info.stage === 'III') ptsPerCell = 4;
+    else if (info.stage === 'IV') ptsPerCell = 8;
+    
+    let totalCells = Math.min(14, Math.ceil((parseInt(s.gPoints) || 0) / ptsPerCell));
+    let isRed = totalCells >= 8;
+    const gCellColor = isRed ? 'var(--danger)' : 'var(--blue)';
+    const gCellText = totalCells === 0 ? 'Empty' : (isRed ? 'Red' : 'Blue');
+
+    let powerBase = info.power || 0;
+    let powerBonus = 0;
+    
+    if (info.stage === 'III') {
+      if (s.isFullStrength) powerBonus += 5;
+      if (s.isTraited) powerBonus += 5;
+      if (isRed) powerBonus += 5;
+    } else if (info.stage === 'IV') {
+      if (s.isFullStrength) powerBonus += 8;
+      if (s.isTraited) powerBonus += 8;
+      if (isRed) powerBonus += 8;
+    } else if (info.stage === 'V') {
+      if (s.isFullStrength) powerBonus += 15;
+      if (s.isTraited) powerBonus += 15;
+      if (isRed) powerBonus += 15;
+    } else if (info.stage === 'VI' || info.stage === 'VI+' || info.stage === 'M') {
+      if (s.isFullStrength) powerBonus += 20;
+      if (s.isTraited) powerBonus += 15;
+      if (isRed) powerBonus += 20;
+    }
+    
+    let totalPower = powerBase + powerBonus;
+    const powerEl = document.getElementById(`power${num}`);
+    if (powerEl) {
+      powerEl.innerText = powerBonus > 0 ? `${totalPower} (+${powerBonus})` : `${totalPower}`;
+    }
+    
+    const nameEl = document.getElementById(`name${num}`);
+    if (nameEl) nameEl.innerText = s.id || "Unknown";
+    
+    const attrEl = document.getElementById(`attr${num}`);
+    if (attrEl) attrEl.innerHTML = `<span class="${attrColor}">${info.attr} / Stage: ${info.stage}</span>`;
+    
+    const missEl = document.getElementById(`miss${num}`);
+    if (missEl) missEl.innerText = s.miss || 0;
+    
+    const gcellEl = document.getElementById(`gcell${num}`);
+    if (gcellEl) {
+      gcellEl.innerText = `${totalCells} / 14 (${gCellText})`;
+      gcellEl.style.color = gCellColor;
+    }
+    
+    const bTot = parseInt(s.bTot) || 0;
+    const bWin = parseInt(s.bWin) || 0;
+    const rate = bTot > 0 ? Math.round((bWin / bTot) * 100) : 0;
+    const battleEl = document.getElementById(`battle${num}`);
+    if (battleEl) battleEl.innerText = `${bWin}승 ${bTot}전 (${rate}%)`;
+    
+    const selEl = document.getElementById(`selDigi${num}`);
+    if (selEl) selEl.value = s.id;
+
+    const badge = document.getElementById(`callBadge${num}`);
+    if (badge) {
+      if (s.callType && s.callType !== 'none') {
+        badge.style.display = 'block';
+        badge.innerText = s.callType === 'sleep' ? '수면 호출!' : '호출!';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    
+    if(num === activeSlot) {
+      updateBonusUI();
+      analyzePrediction();
+    renderJogressGuide();
+      updateTimerDropdown(info.stage);
+    }
+  }
+
+  function startTimer() {
+    const sel = document.getElementById('timerSelect');
+    if (!sel) return;
+    const sec = parseInt(sel.value);
+    slotData[activeSlot].remainSec = sec;
+    slotData[activeSlot].isCold = false;
+    saveData();
+    renderTimerUI();
+  }
+
+  function toggleCold() {
+    const s = slotData[activeSlot];
+    if (s.remainSec > 0 || (s.callType && s.callType !== 'none')) {
+      s.isCold = !s.isCold;
+      saveData();
+      renderTimerUI();
+    } else {
+      alert("진행 중인 타이머나 호출이 없습니다.");
+    }
+  }
+
+  function adjustTime(mins) {
+    const s = slotData[activeSlot];
+    if (s.remainSec <= 0 && !s.isCold) {
+      alert('타이머가 작동 중일 때만 보정이 가능합니다.');
+      return;
+    }
+    const deltaSec = mins * 60;
+    s.remainSec = Math.max(0, s.remainSec + deltaSec);
+    saveData();
+    renderTimerUI();
+  }
+
+  function formatTime(totalSec) {
+    if (totalSec <= 0) return "00:00:00";
+    const h = Math.floor(totalSec / 3600).toString().padStart(2, '0');
+    const m = Math.floor((totalSec % 3600) / 60).toString().padStart(2, '0');
+    const s = (totalSec % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  }
+
+  function formatMinSec(totalSec) {
+    if (totalSec <= 0) return "00:00";
+    const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+    const s = (totalSec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function renderTimerUI() {
+    const s = slotData[activeSlot];
+    const timeEl = document.getElementById('timeRemaining');
+    const statusEl = document.getElementById('timerStatus');
+    const btnCold = document.getElementById('btnCold');
+    if (!timeEl || !statusEl || !btnCold) return;
+
+    timeEl.innerText = formatTime(s.remainSec);
+    
+    if (s.isCold) {
+      statusEl.innerText = "콜드 모드 (타이머 정지)";
+      statusEl.style.color = "var(--blue)";
+      timeEl.style.color = "var(--blue)";
+      btnCold.innerText = "해제 (재개)";
+      btnCold.classList.add("cold-active");
+    } else if (s.remainSec === 0) {
+      statusEl.innerText = "진화 대기 / 대기 중";
+      statusEl.style.color = "var(--dim)";
+      timeEl.style.color = "var(--timer-color)";
+      btnCold.innerText = "콜드 모드 (정지)";
+      btnCold.classList.remove("cold-active");
+    } else {
+      statusEl.innerText = "진화 타이머 진행 중...";
+      statusEl.style.color = "var(--accent)";
+      timeEl.style.color = "var(--timer-color)";
+      btnCold.innerText = "콜드 모드 (정지)";
+      btnCold.classList.remove("cold-active");
+    }
+  }
+
+  function triggerCall(type) {
+    const s = slotData[activeSlot];
+    if (s.callType && s.callType !== 'none') {
+      alert("이미 진행 중인 호출이 있습니다. 응답을 먼저 해주세요.");
+      return;
+    }
+    s.callType = type;
+    s.callRemainSec = (type === 'sleep') ? 3600 : 600;
+    saveData();
+    renderCallUI();
+    renderSlot(activeSlot);
+  }
+
+  function answerCall() {
+    const s = slotData[activeSlot];
+    if (!s.callType || s.callType === 'none') {
+      alert("현재 응답할 호출이 없습니다.");
+      return;
+    }
+    s.callType = 'none';
+    s.callRemainSec = 0;
+    saveData();
+    renderCallUI();
+    renderSlot(activeSlot);
+  }
+
+  function renderCallUI() {
+    const s = slotData[activeSlot];
+    const statusText = document.getElementById('callStatusText');
+    if (!statusText) return;
+    
+    if (!s.callType || s.callType === 'none') {
+      statusText.innerText = "현재 호출 없음";
+      statusText.style.color = "var(--dim)";
+    } else {
+      const typeStr = s.callType === 'sleep' ? '수면' : '배고픔/근력';
+      statusText.innerText = `[${typeStr}] 종료까지: ${formatMinSec(s.callRemainSec)}`;
+      statusText.style.color = "var(--danger)";
+    }
+  }
+
+  setInterval(() => {
+    let needRender = false;
+    for (let i = 1; i <= 2; i++) {
+      const s = slotData[i];
+      if (!s.isCold) {
+        if (s.remainSec > 0) {
+          s.remainSec--;
+          if (s.remainSec === 0) {
+            alert(`[슬롯 ${i}] 진화 타이머가 완료되었습니다!`);
+          }
+          if (i === activeSlot) needRender = true;
+        }
+
+        if (s.callType && s.callType !== 'none' && s.callRemainSec > 0) {
+          s.callRemainSec--;
+          if (s.callRemainSec === 0) {
+            applyCareMistakePenalty(i, 1);
+            s.callType = 'none';
+            alert(`[슬롯 ${i}] 호출 응답 시간 초과! 케어 미스 페널티 적용됨.`);
+            if (i === activeSlot) needRender = true;
+          }
+          if (i === activeSlot) needRender = true;
+        }
+      }
+    }
+    if (needRender) {
+      saveData();
+      renderTimerUI();
+      renderCallUI();
+      renderSlot(activeSlot);
+    }
+  }, 1000);
+
+
+  // 원본 범례 해석: 0~7칸은 Blue(Empty 포함), 8~14칸은 Red.
+  // 기존의 텍스트 정규식 파싱은 제거하고 동일한 원본 아이콘 구조를 사용한다.
+  function evoCells(s) {
+    const stage = db[s.id]?.stage;
+    const scale = ['I','II'].includes(stage) ? 2 : stage === 'III' ? 4 : stage === 'IV' ? 8 : 16;
+    return Math.max(0, Math.min(14, Math.ceil((Number(s.gPoints) || 0) / scale)));
+  }
+  function evoColor(s) {return evoCells(s) >= 8 ? 'Red' : 'Blue/Empty';}
+  function evoEsc(value) {return String(value ?? '').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));}
+  function evoName(dot) {return imgToName[dot] || dot;}
+  function evoSprite(dot) {return '<img class="evo-route-icon" loading="lazy" src="https://humulos.com/digimon/images/dot/pengz/' + encodeURIComponent(dot) + '.gif" alt="">';}
+  function evoStage(dot) {return db[evoName(dot)]?.stage || '?';}
+
+  function describeEvolutionRule(route) {
+    const icons = route.icons || [];
+    if (route.kind === 'death' || icons.includes('pengzDeath')) return '사망 시 30% 확률로 스컬그레이몬 "G" 침식 모드 (부활 방지 쉐이크 사용 시 발동하지 않음)';
+    if (route.kind === 'unverified') return '원본 차트에 연결선만 표시됨 · 상세 조건 미표기';
+    if (icons.includes('jogresswith')) return '조그레스 상대 지정 · 조그레스 도감 참조';
+    if (icons.includes('jogressOnly')) return '조그레스 전용 · 조그레스 도감 참조';
+    if (icons.includes('other')) return '다른 명시 진화 조건에 해당하지 않을 때 (기본 경로)';
+    const labels = [];
+    const mis = icons.find(x=>/^mistake/.test(x));
+    const mist = {'mistake02':'케어 미스 0~2회','mistake03':'케어 미스 0~3회','mistake34':'케어 미스 3~4회','mistake4':'케어 미스 4회 이상','mistake0':'케어 미스 0회'};
+    if (mis) labels.push(mist[mis] || '케어 미스 아이콘 '+mis+' · 상세 확인');
+    if (icons.includes('gcellPen1')) labels.push('G-Cell Red (8~14칸)');
+    if (icons.includes('gcellPen0')) labels.push('G-Cell Blue/Empty (0~7칸)');
+    if (icons.includes('battlesHor')) labels.push('현재 형태 배틀 15전 이상 · 승률 80% 권장 (40~79% 확률 저하)');
+    if (icons.includes('totalbattles30')) labels.push('생애 누적 배틀 30전 이상');
+    if (icons.includes('totalbattles50')) labels.push('생애 누적 배틀 50전 이상');
+    if (icons.includes('poop')) labels.push('진화 시 화면에 배설물 8개');
+    if (icons.includes('winRatio80')) labels.push('승률 80% 이상 (80% 미만은 원문 FAQ 확률 규칙 별도 확인)');
+    if (icons.includes('defeatg10')) labels.push('5단계 이상 Godzilla/G-침식/G-융합 몬스터 10마리 처치');
+    if (icons.includes('blank')) {} // original graph spacer; not a requirement
+    return labels.join(' · ') || (icons.length ? '원본 아이콘 상세 확인 필요' : '별도 요구 조건 표시 없음');
+  }
+
+  function evalExplicitRoute(route, slot) {
+    const icons = route.icons || [];
+    if (route.kind === 'death') return {status:'special',checks:[{ok:null,text:describeEvolutionRule(route)}],chance:null};
+    if (route.kind === 'unverified') return {status:'unknown',checks:[{ok:null,text:describeEvolutionRule(route)}],chance:null};
+    if (icons.includes('jogresswith') || icons.includes('jogressOnly')) return {status:'jogress',checks:[],chance:null};
+    if (icons.includes('other')) return {status:'fallback',checks:[],chance:null};
+    const miss=Number(slot.miss)||0,cells=evoCells(slot),bTot=Number(slot.bTot)||0,bWin=Number(slot.bWin)||0;
+    const pct=bTot ? bWin / bTot * 100 : 0;
+    const checks=[];
+    const mk=(ok,text)=>checks.push({ok,text});
+    for (const icon of icons) {
+      if (icon === 'mistake02') mk(miss<=2,'케어 미스 0~2회 ('+miss+'회)');
+      else if (icon === 'mistake03') mk(miss<=3,'케어 미스 0~3회 ('+miss+'회)');
+      else if (icon === 'mistake34') mk(miss>=3&&miss<=4,'케어 미스 3~4회 ('+miss+'회)');
+      else if (icon === 'mistake4') mk(miss>=4,'케어 미스 4회 이상 ('+miss+'회)');
+      else if (icon === 'mistake0') mk(miss===0,'케어 미스 0회 ('+miss+'회)');
+      else if (icon === 'gcellPen0') mk(cells<=7,'G-Cell Blue/Empty (0~7칸): 현재 '+cells+'칸');
+      else if (icon === 'gcellPen1') mk(cells>=8,'G-Cell Red (8~14칸): 현재 '+cells+'칸');
+      else if (icon === 'battlesHor') {
+        mk(bTot>=15,'현재 단계 배틀 15전 이상: '+bTot+'전');
+        mk(pct>=40 && bTot>=15,'승률 '+pct.toFixed(1)+'% (40% 미만 진화 불가)');
+      }
+      else if (icon === 'totalbattles30' || icon === 'totalbattles50') {
+        const need=icon==='totalbattles30'?30:50;
+        const val=slot.lifetimeBattles;
+        mk(val == null ? null : Number(val)>=need,'생애 누적 배틀 '+need+'전 이상'+(val==null?' (기록 필요)':' ('+val+'전)'));
+      }
+      else if (icon === 'poop') {
+        const val=slot.poopCount;
+        mk(val==null ? null : Number(val)===8,'진화 시점 배설물 정확히 8개'+(val==null?' (기록 필요)':' ('+val+'개)'));
+      }
+      else if (icon === 'winRatio80') {
+        mk(bTot === 0 ? null : pct >= 80 ? true : null, '현재 기록 승률 '+pct.toFixed(1)+'% / 목표 80% 이상'+(bTot === 0?' (배틀 기록 필요)':pct < 80?' (80% 미만 확률 FAQ 확인 필요)':''));
+      }
+      else if (icon === 'defeatg10') {
+        const val=slot.gKills;
+        mk(val==null ? null : Number(val)>=10,'대상 G몬 10마리 처치'+(val==null?' (기록 필요)':' ('+val+'마리)'));
+      }
+      else if (icon !== 'blank') mk(null,'원본 아이콘 확인 필요: '+icon);
+    }
+    const failed=checks.some(x=>x.ok===false),unknown=checks.some(x=>x.ok===null);
+    let chance=null;
+    if (icons.includes('battlesHor') && !failed && !unknown) chance = pct>=80?100:pct>=70?70:pct>=40?40:0;
+    return {status:failed?'unmet':unknown?'unknown':'met',checks,chance};
+  }
+
+  function getEvolutionStatus(sourceDot,slot) {
+    const outgoing=EVOLUTION_ROUTES.filter(r=>r.from===sourceDot && r.kind!=='jogress');
+    const explicit=outgoing.filter(r=>!r.icons.includes('other') && r.kind==='normal');
+    const explicitEval=explicit.map(r=>evalExplicitRoute(r,slot));
+    const hasMet=explicitEval.some(x=>x.status==='met');
+    const hasUnknown=explicitEval.some(x=>x.status==='unknown');
+    return outgoing.map(route=>{
+      let ev=evalExplicitRoute(route,slot);
+      if (route.icons.includes('other')) {
+        ev={status:hasMet?'unmet':hasUnknown?'unknown':'fallback',checks:[{ok:hasMet?false:hasUnknown?null:true,text:'같은 출발 몬스터의 다른 진화 조건이 모두 불충족일 때 적용'}],chance:null};
+      }
+      return {route,ev};
+    });
+  }
+  function evoLabel(status, chance) {
+    if (status==='met') return chance!==null && chance!==undefined && chance<100 ? '조건 일치 · 진화 확률 '+chance+'%' : '표시된 조건 일치';
+    if (status==='fallback') return '기본 진화 후보';
+    if (status==='unmet') return '미충족';
+    if (status==='special') return '사망 시 발동 · 별도 판정';
+    if (status==='jogress') return '조그레스 필요';
+    return '추가 확인 필요';
+  }
+  function evoStatusColor(status) {return ['met','fallback'].includes(status)?'#71dca4':status==='unmet'?'#e8a65e':'#a7a8b2';}
+  function evoRouteHtml(route,ev,showSource=false) {
+    const text=describeEvolutionRule(route);
+    const tag=evoLabel(ev.status,ev.chance);
+    let checks='';
+    for (const c of ev.checks) checks+='<div style="font-size:10px;color:'+(c.ok===true?'#71dca4':c.ok===false?'#ecad6b':'#a7a8b2')+';">'+(c.ok===true?'✓ ':c.ok===false?'○ ':'? ')+evoEsc(c.text)+'</div>';
+    const dot=showSource?route.from:route.to;
+    return '<div class="evo-row"><div class="evo-row-title">'+evoSprite(dot)+'<span>'+evoEsc(evoName(dot))+' <small style="color:var(--dim)">['+evoEsc(evoStage(dot))+']</small></span></div><div class="evo-row-note">'+evoEsc(text)+'<div style="color:'+evoStatusColor(ev.status)+';font-weight:bold;margin:3px 0;">'+tag+'</div>'+checks+'</div></div>';
+  }
+
+  function syncEvoExtraInputs() {
+    const slot=slotData[activeSlot];
+    const fields=[['evoLifetime','lifetimeBattles'],['evoPoop','poopCount'],['evoGKills','gKills']];
+    fields.forEach(([field,key])=>{const e=document.getElementById(field);if(e && document.activeElement!==e)e.value=slot[key]??'';});
+  }
+
+  function analyzePrediction() {
+    const s=slotData[activeSlot],data=db[s.id];
+    const result=document.getElementById('predictionResult'),box=document.getElementById('conditionList');
+    if(!result||!box)return;
+    if(!data){result.textContent='도감에 없는 몬스터';box.textContent='등록된 개체를 선택해 주세요.';return;}
+    const routes=getEvolutionStatus(data.img,s);
+    const normal=routes.filter(x=>x.route.kind==='normal' || x.route.kind==='unverified');
+    const deaths=routes.filter(x=>x.route.kind==='death');
+    const specials=routes.filter(x=>x.route.kind==='special');
+    const combos=getJogressFor(s.id),otherSlot=slotData[activeSlot===1?2:1];
+    const bTot=Number(s.bTot)||0, bWin=Number(s.bWin)||0, pct=bTot?bWin/bTot*100:0;
+    let html='<div style="color:var(--dim);font-size:10px;padding:8px 0;text-align:center;">케어 미스 '+Number(s.miss||0)+'회 · G-Cell '+evoCells(s)+'/14 ('+evoColor(s)+') · 전투 '+bTot+'전 · 승률 '+pct.toFixed(1)+'%</div>';
+    if (normal.length) {
+      html+='<div style="color:var(--accent);font-size:11px;font-weight:bold;margin:8px 0;">일반 진화 · 원본 연결선 '+normal.length+'개</div>';
+      for (const {route,ev} of normal) html+=evoRouteHtml(route,ev);
+    }
+    if (deaths.length) {
+      html+='<div style="color:var(--gold);font-size:11px;font-weight:bold;margin:9px 0;">사망 후 특수 진화</div>';
+      for (const {route,ev} of deaths) html+=evoRouteHtml(route,ev);
+    }
+    if (specials.length) {
+      html+='<div style="color:var(--gold);font-size:11px;font-weight:bold;margin:10px 0;">특수 진화 · '+specials.length+'개 검증 경로</div>';
+      for (const {route,ev} of specials) html+=evoRouteHtml(route,ev);
+    }
+    if (combos.length) {
+      const matched=combos.filter(c=>!c.external && c.p2===otherSlot.id);
+      html+='<div style="color:var(--gold);font-size:11px;font-weight:bold;margin:10px 0;">조그레스 · '+combos.length+'개 방향별 조합</div>';
+      if (matched.length) html+='<div style="color:#71dca4;font-size:11px;">✓ 다른 슬롯과 일치: '+matched.map(x=>evoEsc(x.result)).join(', ')+'</div>';
+      const groups=new Map();
+      for(const c of combos){const k=c.result;const a=groups.get(k)||[];a.push(c.external?'외부 펜들럼 COLOR':c.p2);groups.set(k,a);}
+      for(const [target,partners] of groups){html+='<div class="evo-row" style="font-size:10px;"><b>'+evoEsc(target)+'</b><div style="color:var(--dim);">파트너: '+evoEsc(partners.join(', '))+'</div></div>';}
+    }
+    const shown=normal.length+deaths.length+specials.length;
+    const stageDone=['VI','VI+','M'].includes(data.stage);
+    if (!shown&&!combos.length) {
+      result.textContent=stageDone?'최종 진화 단계 · 추가 경로 없음':'원본 진화표에 일반 진화 경로 없음';
+      html+='<div style="color:var(--gold);padding:12px;text-align:center;">'+(stageDone?'★ 최종 진화 단계 ★':'등록된 경로 없음')+'</div>';
+    } else {
+      result.textContent=(stageDone?'최종 진화 단계 · ':'')+'일반/특수 경로 '+shown+'개 · 조그레스 '+combos.length+'조합';
+    }
+    box.innerHTML=html;
+    syncEvoExtraInputs();
+  }
+
+  let selectedChartDot='monodra';
+  function selectChartMonster(dot) {
+    if(!imgToName[dot])return;
+    selectedChartDot=dot;
+    const search=document.getElementById('chartSearch');if(search)search.value='';
+    const stage=document.getElementById('chartStage');if(stage)stage.value='';
+    renderEvolutionChart();
+    document.getElementById('chartDetails')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+  function renderEvolutionChart() {
+    const list=document.getElementById('chartList');if(!list)return;
+    const search=(document.getElementById('chartSearch')?.value||'').toLowerCase().trim();
+    const stage=document.getElementById('chartStage')?.value||'';
+    const species=Object.entries(db).filter(([name,info])=>(!search||name.toLowerCase().includes(search)||info.img.includes(search))&&(!stage||info.stage===stage));
+    document.getElementById('chartCount').textContent='몬스터 '+species.length+' / '+Object.keys(db).length+'종 · 일반 진화/특수 연결 '+EVOLUTION_ROUTES.length+'건 · 조그레스 '+jogressDB.length+'건';
+    list.innerHTML=species.map(([name,info])=>'<button class="evo-species '+(info.img===selectedChartDot?'selected':'')+'" onclick="selectChartMonster(\''+info.img+'\')">'+evoSprite(info.img)+'<span class="evo-name">'+evoEsc(name)+'</span><span class="evo-stage">Stage '+info.stage+'</span></button>').join('')||'<div style="color:var(--dim)">검색 결과 없음</div>';
+    renderChartDetails();
+  }
+  function renderChartDetails() {
+    const box=document.getElementById('chartDetails');if(!box)return;
+    const dot=selectedChartDot,name=evoName(dot),info=db[name];
+    if(!info)return;
+    const current=slotData[activeSlot];
+    const isTracked=current.id===name;
+    const to=getEvolutionStatus(dot, isTracked?current:{id:name,miss:0,gPoints:0,bTot:0,bWin:0});
+    const from=EVOLUTION_ROUTES.filter(r=>r.to===dot && r.kind!=='jogress');
+    const jogOut=jogressDB.filter(c=>c.sourceImg===dot);
+    const jogIn=jogressDB.filter(c=>c.resultImg===dot);
+    let html='<div class="evo-section"><h3>'+evoSprite(dot)+' '+evoEsc(name)+' · Stage '+info.stage+'</h3><div style="color:var(--dim);font-size:10px;">'+(isTracked?'현재 선택 슬롯의 실제 기록으로 조건 판정 중':'이 몬스터를 메인 슬롯에서 선택하면 실시간 조건 판정이 표시됩니다.')+'</div></div>';
+    if (info.libraryNumber != null) {
+      const row=(label,value)=>'<div class="evo-detail-stat"><span>'+evoEsc(label)+'</span><strong>'+evoEsc(value)+'</strong></div>';
+      html+='<div class="evo-section"><h3>몬스터 상세 정보 · 원본 도감</h3><div class="evo-detail-stats">';
+      html+=row('도감 번호',info.libraryNumber)+row('속성',info.attr)+row('전투력',info.power)+row('최소 체중',info.minWeight)+row('취침 시간',info.sleepTime)+row('에너지',info.energy)+row('하트 감소',info.heartLossMinutes+'분');
+      html+=row('배틀',info.battleAllowed?'가능':'불가')+row('조그레스',info.jogressAllowed?'가능':'불가')+row('인카운터 시간 그룹',info.encounterTimeGroup)+row('인카운터 상대 그룹',info.encounterOpponentGroup);
+      html+='</div><div class="evo-detail-note">출처: 사용자가 전달한 Humulos 상세 도감 항목</div></div>';
+    }
+    html+='<div class="evo-section"><h3>이 몬스터로 진화 · '+from.length+'개 일반/특수 경로</h3>';
+    if (from.length > 8) html+='<details class="evo-reverse-jog"><summary>진화 출발 몬스터 '+from.length+'종 펼치기</summary>';
+    html+=from.length?from.map(route=>'<div class="evo-row"><div class="evo-row-title">'+evoSprite(route.from)+evoEsc(evoName(route.from))+'</div><div class="evo-row-note">'+evoEsc(describeEvolutionRule(route))+'</div></div>').join(''):'<div style="font-size:11px;color:var(--dim);">원본 차트에 일반 연결선 없음</div>';
+    html+='</div><div class="evo-section"><h3>다음 진화 · '+to.length+'개 일반/특수 경로</h3>';
+    html+=to.length?to.map(x=>isTracked?evoRouteHtml(x.route,x.ev):'<div class="evo-row"><div class="evo-row-title">'+evoSprite(x.route.to)+evoEsc(evoName(x.route.to))+'</div><div class="evo-row-note">'+evoEsc(describeEvolutionRule(x.route))+'</div></div>').join(''):'<div style="font-size:11px;color:var(--dim);">일반 진화 연결선 없음 (최종/조그레스 전용 여부 확인)</div>';
+    html+='</div><div class="evo-section"><h3>조그레스 · 진화 주체 '+jogOut.length+'조합 / 결과 역조회 '+jogIn.length+'조합</h3>';
+    if(jogOut.length){const groups=new Map();for(const c of jogOut){const v=groups.get(c.result)||[];v.push(c.external?'외부 펜들럼 COLOR':c.p2);groups.set(c.result,v);}for(const [target,partners] of groups)html+='<div class="evo-row"><b>'+evoEsc(target)+'</b><div style="color:var(--dim);font-size:10px;">필요 파트너: '+evoEsc(partners.join(', '))+'</div></div>';}
+    else html+='<div style="color:var(--dim);font-size:10px;">진화 주체로 등록된 조그레스 조합 없음</div>';
+    if (jogIn.length) {
+      const groups=new Map();
+      for (const c of jogIn) { const v=groups.get(c.p1)||[];v.push(c.external?'외부 펜들럼 COLOR':c.p2);groups.set(c.p1,v); }
+      html+='<details class="evo-reverse-jog"><summary>이 몬스터로 조그레스 진화하는 조합 '+jogIn.length+'건 보기 (눌러 펼치기)</summary>';
+      for (const [source,partners] of groups) html+='<div class="evo-row"><b>'+evoEsc(source)+'</b><div style="font-size:10px;color:var(--dim);">파트너: '+evoEsc(partners.join(', '))+'</div></div>';
+      html+='</details>';
+    }
+    html+='</div>';
+    box.innerHTML=html;
+  }
+  // 조그레스 표는 원본 방향별 데이터(jogressDB)를 그대로 사용합니다.
+  // 화면에는 필터된 결과만 렌더링해 모바일에서 수백 행이 펼쳐지지 않게 합니다.
+  const jogressUi = {query:'', stage:'', source:'', result:'', onlySlots:false, page:0, perPage:12};
+  function updateJogressFilter(key,value) {
+    jogressUi[key]=value;
+    jogressUi.page=0;
+    renderJogressGuide(true);
+  }
+  function jogressPage(delta) {
+    jogressUi.page=Math.max(0,jogressUi.page+delta);
+    renderJogressGuide(true);
+  }
+  function renderJogressGuide(preserveFocus=false) {
+    const panel=document.getElementById('view-db');
+    if (!panel) return;
+    const esc=str=>String(str).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const d1=slotData[1].id,d2=slotData[2].id;
+    const available=getSlotJogress(d1,d2), reverse=getSlotJogress(d2,d1);
+    const needle=jogressUi.query.trim().toLocaleLowerCase();
+    const filtered=jogressDB.filter(c=>{
+      if(jogressUi.onlySlots && c.p1!==d1 && c.p1!==d2) return false;
+      if(jogressUi.stage && c.stage!==jogressUi.stage) return false;
+      if(jogressUi.source && c.p1!==jogressUi.source) return false;
+      if(jogressUi.result && c.result!==jogressUi.result) return false;
+      if(needle && ![c.p1,c.p2,c.result,c.external?'외부 펜들럼 COLOR':''].some(x=>String(x||'').toLocaleLowerCase().includes(needle)))return false;
+      return true;
+    });
+    const pages=Math.max(1,Math.ceil(filtered.length/jogressUi.perPage));
+    jogressUi.page=Math.min(jogressUi.page,pages-1);
+    const shown=filtered.slice(jogressUi.page*jogressUi.perPage,(jogressUi.page+1)*jogressUi.perPage);
+    const sourceNames=[...new Set(jogressDB.map(c=>c.p1))].sort((a,b)=>a.localeCompare(b,'ko'));
+    const resultNames=[...new Set(jogressDB.map(c=>c.result))].sort((a,b)=>a.localeCompare(b,'ko'));
+    const selectOptions=(names,chosen,placeholder)=>'<option value="">'+placeholder+'</option>'+names.map(n=>'<option value="'+esc(n)+'"'+(n===chosen?' selected':'')+'>'+esc(n)+'</option>').join('');
+    let html='<div class="jogress-compact"><div class="jogress-slot-box"><strong>현재 슬롯 조그레스</strong><div>슬롯 1: '+esc(d1)+' → 슬롯 2: '+esc(d2)+'</div><div class="jogress-outcome">'+(available.length?'✓ 결과: '+available.map(c=>esc(c.result)).join(', '):'해당 방향의 조그레스 조합 없음')+'</div><div class="jogress-muted">반대 방향: '+(reverse.length?reverse.map(c=>esc(c.result)).join(', '):'조합 없음')+'</div></div>';
+    html+='<div class="jogress-filter-title">조그레스 조합 검색 <span>총 '+jogressDB.length+'건</span></div>';
+    html+='<input id="jogressSearch" type="search" placeholder="진화 주체 · 파트너 · 결과 검색" value="'+esc(jogressUi.query)+'" oninput="updateJogressFilter(\'query\',this.value)" aria-label="조그레스 검색">';
+    html+='<div class="jogress-filter-grid"><select aria-label="진화 단계" onchange="updateJogressFilter(\'stage\',this.value)">'+selectOptions(['IV','V','OTHER'],jogressUi.stage,'모든 단계')+'</select>';
+    html+='<select aria-label="진화 주체" onchange="updateJogressFilter(\'source\',this.value)">'+selectOptions(sourceNames,jogressUi.source,'진화 주체 전체')+'</select>';
+    html+='<select aria-label="진화 결과" onchange="updateJogressFilter(\'result\',this.value)">'+selectOptions(resultNames,jogressUi.result,'진화 결과 전체')+'</select></div>';
+    html+='<label class="jogress-check"><input type="checkbox" '+(jogressUi.onlySlots?'checked':'')+' onchange="updateJogressFilter(\'onlySlots\',this.checked)"> 현재 육성 슬롯 몬스터만 보기</label>';
+    html+='<div class="jogress-muted">행 = 진화할 개체 / 파트너 = 상대. 조합 순서에 따라 결과가 달라질 수 있어요.</div>';
+    html+='<div class="jogress-count">검색 결과 '+filtered.length+'건 · '+(filtered.length?jogressUi.page*jogressUi.perPage+1:0)+'–'+Math.min(filtered.length,(jogressUi.page+1)*jogressUi.perPage)+'건 표시</div>';
+    html+=shown.map(c=>'<details class="jogress-item"><summary><span>'+esc(c.p1)+' <span class="jogress-muted">+ '+esc(c.external?'외부 펜들럼 COLOR':c.p2)+'</span></span><b>→ '+esc(c.result)+'</b></summary><div class="jogress-item-detail">진화 주체: '+esc(c.p1)+'<br>파트너: '+esc(c.external?'외부 펜들럼 COLOR':c.p2)+'<br>결과: '+esc(c.result)+'<br>원본 표 구분: '+esc(c.stage)+'</div></details>').join('');
+    if(!filtered.length)html+='<div class="jogress-empty">일치하는 조합이 없어요. 필터를 변경해 보세요.</div>';
+    html+='<div class="jogress-pager"><button onclick="jogressPage(-1)" '+(jogressUi.page===0?'disabled':'')+'>이전</button><span>'+(jogressUi.page+1)+' / '+pages+' 페이지</span><button onclick="jogressPage(1)" '+(jogressUi.page>=pages-1?'disabled':'')+'>다음</button></div>';
+    html+='<details class="jogress-optional"><summary>현재 슬롯 일반 진화 조건 보기</summary>';
+    for(const [label,id] of [['슬롯 1',d1],['슬롯 2',d2]]){
+      const routes=getUnifiedRoutes(id);
+      html+='<h4>'+label+' · '+esc(id)+'</h4>'+(routes.length?routes.map(c=>'<div>'+esc(c.t)+' : '+esc(c.r)+'</div>').join(''):'<div>등록된 일반 진화 경로 없음</div>');
+    }
+    html+='</details></div>';
+    const searchActive=preserveFocus&&document.activeElement?.id==='jogressSearch';
+    const pos=searchActive?document.activeElement.selectionStart:null;
+    panel.innerHTML=html;
+    if(searchActive){const input=document.getElementById('jogressSearch');input.focus();try{input.setSelectionRange(pos,pos)}catch(e){}}
+  }
+
+  function executeJogress() {
+    const d1 = slotData[1].id;
+    const d2 = slotData[2].id;
+    const matches = getSlotJogress(d1,d2);
+    if (!matches.length) {
+      alert('슬롯 1 → 슬롯 2 순서의 조그레스 결과가 없습니다.\n슬롯을 바꾸거나 도감을 확인해주세요.');
+      return;
+    }
+    const result = matches[0].result;
+    if (!result || !db[result]) {
+      alert('조그레스 결과가 도감에 없습니다. 실행을 중단합니다.');
+      return;
+    }
+    if (!confirm('조그레스 결과: ' + result + '\n진화 주체: 슬롯 1 (' + d1 + ')\n파트너: 슬롯 2 (' + d2 + ')\n\n진행할까요?')) return;
+    slotData[1].id = result;
+    // 실제 기기에서는 백업 몬스터가 소모되지만 이 앱의 두 슬롯은 육성 기록이므로
+    // 자동 삭제하지 않는다. 사용자가 직접 슬롯 기록을 관리하도록 안내한다.
+    saveData();
+    renderSlot(1);
+    alert('조그레스 결과가 슬롯 1에 반영되었습니다.\n실제 기기의 백업 파트너는 조그레스 시 소모됩니다.');
+  }
+
+  function renderQuestList() {
+    const container = document.getElementById('questListContainer');
+    if (!container) return;
+    const s = slotData[activeSlot];
+    let html = '';
+
+    questDB.forEach(q => {
+      const isCleared = !!s.questCleared[q.id];
+      let enemiesHtml = '';
+      q.enemies.forEach(e => {
+        const imgName = db[e] ? db[e].img : 'other';
+        enemiesHtml += `
+          <div class="enemy-chip">
+            <img src="https://humulos.com/digimon/images/dot/pengz/${imgName}.gif" alt="${e}">
+            <span>${e}</span>
+          </div>`;
+      });
+
+      const unlockHtml = q.unlock ? `<div class="quest-unlock">보상: ${q.unlock}</div>` : '';
+
+      html += `
+        <div class="quest-item ${isCleared ? 'cleared' : ''}">
+          <div class="quest-info">
+            <div class="quest-title">${q.name}</div>
+            <div class="quest-enemies">${enemiesHtml}</div>
+            ${unlockHtml}
+          </div>
+          <button class="btn ${isCleared ? '' : 'primary'}" onclick="toggleQuest('${q.id}', ${q.enemies.length})" style="width: 50px;">
+            ${isCleared ? '취소' : '돌파!'}
+          </button>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function toggleQuest(questId, enemyCount) {
+    const s = slotData[activeSlot];
+    if (s.questCleared[questId]) {
+      s.questCleared[questId] = false;
+    } else {
+      s.questCleared[questId] = true;
+      s.bTot = (parseInt(s.bTot) || 0) + enemyCount;
+      s.lifetimeBattles = (parseInt(s.lifetimeBattles) || 0) + enemyCount;
+      s.bWin = (parseInt(s.bWin) || 0) + enemyCount;
+      alert(`${questId} 돌파 성공!\n배틀 전적에 ${enemyCount}승이 추가되었습니다.`);
+      renderSlot(activeSlot);
+    }
+    saveData();
+    renderQuestList();
+  }
+
+  function exportData() {
+    const jsonStr = JSON.stringify(slotData);
+    const textarea = document.getElementById('backupTextData');
+    if (!textarea) return;
+    textarea.value = jsonStr;
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      alert('데이터가 성공적으로 복사되었습니다. 다른 브라우저에서 가져오기를 통해 복원하세요.');
+    } catch (e) {
+      alert('텍스트 박스의 코드를 전체 복사해주세요.');
+    }
+  }
+
+  function importData() {
+    const textarea = document.getElementById('backupTextData');
+    if (!textarea) return;
+    const input = textarea.value.trim();
+    if (!input) {
+      alert('백업 코드를 입력해주세요.');
+      return;
+    }
+    try {
+      const data = JSON.parse(input);
+      if (data && data[1] && data[2]) {
+        slotData = data;
+        [1,2].forEach(i => fillEvolutionData(slotData[i]));
+        saveData();
+        initDBSelect();
+        renderSlot(1);
+        renderSlot(2);
+        selectSlot(activeSlot);
+        alert('데이터를 성공적으로 불러왔습니다!');
+        textarea.value = '';
+      } else {
+        alert('올바른 백업 데이터가 아닙니다.');
+      }
+    } catch (e) {
+      alert('데이터 구문 분석 실패. 코드가 온전한지 확인해주세요.');
+    }
+  }
+
+  function resetAllData() {
+    if (confirm("정말로 모든 데이터를 초기화하시겠습니까?")) {
+      slotData = {
+        1: { id: '고지라(초대)', miss: 0, gPoints: 0, bWin: 0, bTot: 0, showArt: false, questCleared: {}, remainSec: 0, isCold: false, callType: 'none', callRemainSec: 0, trainCount: 0, isFullStrength: false, isTraited: false, memo: '' },
+        2: { id: '킹 기도라(헤이세이)', miss: 0, gPoints: 0, bWin: 0, bTot: 0, showArt: false, questCleared: {}, remainSec: 0, isCold: false, callType: 'none', callRemainSec: 0, trainCount: 0, isFullStrength: false, isTraited: false, memo: '' }
+      };
+      saveData();
+      initDBSelect();
+      renderSlot(1);
+      renderSlot(2);
+      selectSlot(1);
+      alert('초기화 완료.');
+    }
+  }
+
+  initPreferences();
+  loadData();
+  [1,2].forEach(i=>fillEvolutionData(slotData[i]));
+  initDBSelect();
+  renderSlot(1);
+  renderSlot(2);
+  renderTimerUI();
+  renderCallUI();
+  renderTrainUI();
+</script>
+<script>
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./service-worker.js').catch(function(err) { console.warn('PWA 등록 실패', err); });
+  });
+}
+</script>
+</body>
+</html>
